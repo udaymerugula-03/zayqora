@@ -1,0 +1,51 @@
+[
+  {
+    "file": "hero.jpg",
+    "source": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1600&q=85&fm=jpg",
+    "description": "Sample restaurant interior",
+    "license": "https://unsplash.com/license",
+    "note": "Licensed stock imagery for demonstration; not photographs of an actual restaurant or its dishes. Do not infer ingredients, allergens or location."
+  },
+  {
+    "file": "biryani.jpg",
+    "source": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=1600&q=85&fm=jpg",
+    "description": "Sample rice dish",
+    "license": "https://unsplash.com/license",
+    "note": "Licensed stock imagery for demonstration; not photographs of an actual restaurant or its dishes. Do not infer ingredients, allergens or location."
+  },
+  {
+    "file": "karahi.jpg",
+    "source": "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=1600&q=85&fm=jpg",
+    "description": "Sample curry dish",
+    "license": "https://unsplash.com/license",
+    "note": "Licensed stock imagery for demonstration; not photographs of an actual restaurant or its dishes. Do not infer ingredients, allergens or location."
+  },
+  {
+    "file": "burger.jpg",
+    "source": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1600&q=85&fm=jpg",
+    "description": "Sample burger",
+    "license": "https://unsplash.com/license",
+    "note": "Licensed stock imagery for demonstration; not photographs of an actual restaurant or its dishes. Do not infer ingredients, allergens or location."
+  },
+  {
+    "file": "pizza.jpg",
+    "source": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1600&q=85&fm=jpg",
+    "description": "Sample pizza",
+    "license": "https://unsplash.com/license",
+    "note": "Licensed stock imagery for demonstration; not photographs of an actual restaurant or its dishes. Do not infer ingredients, allergens or location."
+  },
+  {
+    "file": "dessert.jpg",
+    "source": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1600&q=85&fm=jpg",
+    "description": "Sample cake",
+    "license": "https://unsplash.com/license",
+    "note": "Licensed stock imagery for demonstration; not photographs of an actual restaurant or its dishes. Do not infer ingredients, allergens or location."
+  },
+  {
+    "file": "drink.jpg",
+    "source": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1600&q=85&fm=jpg",
+    "description": "Sample coffee",
+    "license": "https://unsplash.com/license",
+    "note": "Licensed stock imagery for demonstration; not photographs of an actual restaurant or its dishes. Do not infer ingredients, allergens or location."
+  }
+]

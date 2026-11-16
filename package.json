@@ -1,0 +1,16 @@
+{
+  "name": "zayqora",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ZAYQORA Release 1 restaurant platform",
+  "scripts": {
+    "build": "npm run build --prefix frontend",
+    "dev": "npm run dev --prefix frontend",
+    "test:frontend": "npm test --prefix frontend",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0"
+  },
+  "engines": { "node": ">=22.12" }
+}

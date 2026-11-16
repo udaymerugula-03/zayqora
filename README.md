@@ -1,0 +1,168 @@
+# ZAYQORA
+
+ZAYQORA is an internship demonstration of a multi-tenant restaurant platform,
+based on the Release 1 scope in `project_02(Web).docx`. It is a separate project
+from AqarFlow. Saffron Table is a fictional demonstration restaurant; the bundled
+photographs are stock examples, not evidence of an actual restaurant or its food.
+
+## Product scope
+
+The Release 1 implementation covers a public restaurant website and menu,
+guest cart and cash checkout, private order tracking, reservations, a restaurant
+owner workspace, and basic platform administration. One ZAYQORA visual identity
+is used throughout the public and authenticated interfaces.
+
+The initial market is Pakistan, prices are in PKR, and restaurant schedules use
+Asia/Karachi time. Delivery and pickup are cash-only. Cash collection is an
+explicit owner action, not an automatic consequence of placing an order.
+Reservation requests hold capacity while awaiting the owner's decision.
+
+Restaurant owners manage their own restaurant, menu, orders, tables,
+reservations and reports. Platform administrators manage tenants and plans;
+public registration must never grant platform administration.
+
+Release 2/3 features are not included: full staff KDS, POS, QR table ordering,
+rider management, coupons, CRM, inventory, multi-branch operations, subscription
+charging, loyalty, custom domains and advanced analytics. Online payment
+providers are deliberately disabled pending merchant/provider approval.
+
+## Technology
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | Next.js, React, TypeScript, Tailwind CSS |
+| API | Python, FastAPI, Pydantic |
+| Database access | SQLAlchemy and Alembic |
+| Runtime database | PostgreSQL |
+| Browser workflows | Playwright |
+| Hosting configuration | Next.js and FastAPI services in one Vercel project |
+| Uploaded public restaurant images | Dedicated Vercel Blob store |
+| Email processing | Transactional outbox and SMTP delivery worker |
+
+`contracts\api-contract.json` documents the shared API contract. Monetary amounts
+are decimal strings; the API calculates authoritative prices. Tenant access is
+derived from the authenticated user, not a restaurant identifier supplied by
+the browser.
+
+## Configuration and private data
+
+Copy `.env.example` to `.env` and supply your own PostgreSQL connection and a
+cryptographically random secret. Never use example credentials for a deployed
+application. The API reads server configuration; database credentials and mail
+or storage tokens must never use a `NEXT_PUBLIC_` prefix.
+
+The existing local demonstration uses a dedicated PostgreSQL database and
+application role, separate from AqarFlow's data. Its credentials are in the
+ignored `.env`, not in this repository. Local and hosted demonstration
+instances may share demonstration data; this is not environment isolation for
+real customers. Use independent development, preview and production databases
+before accepting real business data.
+
+Generated demonstration login details belong in the ignored
+`.demo-credentials.json`. Do not put that file in Git, screenshots, support
+messages or client documentation.
+
+The supplied photographs and their sources are in `frontend\public\food`.
+See `sources.json` for attribution and demonstration-use information.
+
+## Run locally on Windows
+
+Prerequisites: Node.js 22.12 or later, Python 3.12-3.14 and PostgreSQL. From the
+project root, install dependencies once:
+
+```powershell
+npm.cmd ci --prefix frontend
+python -m venv backend\.venv
+backend\.venv\Scripts\python -m pip install -r backend\requirements.txt
+```
+
+Configure the ignored root `.env`, then apply migrations. For a demonstration
+database only, create the optional fictional restaurants and generated accounts:
+
+```powershell
+backend\.venv\Scripts\python -m alembic -c backend\alembic.ini upgrade head
+$env:PYTHONPATH = 'backend'
+backend\.venv\Scripts\python -m app.seed
+```
+
+Start the API in one terminal:
+
+```powershell
+backend\.venv\Scripts\python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8086
+```
+
+Start the frontend in a second terminal:
+
+```powershell
+npm.cmd run dev --prefix frontend
+```
+
+Open http://127.0.0.1:3000. The API readiness endpoint is
+http://127.0.0.1:8086/health. Port 8086 is intentional; do not terminate another
+application to reclaim port 8085. If you choose a different API port, set
+`API_ORIGIN` in the frontend terminal before launching Next.js.
+
+Both owner and platform administrator accounts use `/login`; successful login
+routes each role to the correct workspace. Demonstration accounts are
+`owner@saffrontable.demo`, `owner@gardencafe.demo`, and `admin@zayqora.demo`.
+Their generated passwords are only in the ignored `.demo-credentials.json`.
+
+| Screen | Path |
+| --- | --- |
+| Platform home | `/` |
+| Demonstration restaurant | `/r/saffron-table` |
+| Digital menu | `/r/saffron-table/menu` |
+| Cart and cash checkout | `/r/saffron-table/cart`, `/r/saffron-table/checkout` |
+| Reservation requests | `/r/saffron-table/reservations` |
+| Owner dashboard | `/app/dashboard` |
+| Orders, menu, reservations | `/app/orders`, `/app/menu`, `/app/reservations` |
+| Owner reports, settings, outbox | `/app/reports`, `/app/settings`, `/app/notifications` |
+| Platform administration | `/platform/overview`, `/platform/tenants`, `/platform/plans` |
+
+Private tracking links are returned after checkout; never publish them in
+documentation or analytics. For mail configuration, delivery-worker commands,
+PostgreSQL test schemas and operational details, see `backend\README.md`.
+
+## Development checks
+
+```powershell
+npm.cmd ci
+npm.cmd run test:frontend
+npm.cmd run build
+backend\.venv\Scripts\python -m pytest backend\tests -q
+npm.cmd run test:e2e
+```
+
+Browser workflows require the running API/frontend, seeded demo accounts and an
+installed Google Chrome browser. They create fictional orders and reservations;
+never target a real restaurant database. Use `E2E_BASE_URL` to select an isolated
+hosted demonstration. The backend guide explains `TEST_DATABASE_URL` and its
+disposable PostgreSQL schemas.
+
+## Hosting
+
+Hosted internship demonstration: https://zayqora-restaurants.vercel.app
+
+`vercel.json` declares the two services and their shared public routing. Requests
+under `/api/` go to FastAPI; other application routes go to Next.js. The
+`API_ORIGIN` service binding lets server-rendered frontend pages call the backend
+without exposing server secrets. Local development uses port 3000 for Next.js
+and port 8086 for FastAPI.
+
+Apply database migrations explicitly before a release. Do not initialize,
+reseed or reset a database on application imports or serverless cold starts.
+Use durable object storage for production uploads, never a serverless instance's
+temporary filesystem.
+
+The notification outbox requires a separately operated delivery worker and
+approved SMTP credentials. A serverless HTTP deployment is not a continuous
+worker. Account verification and customer email delivery must not be described
+as working until a real sender and worker have been configured.
+
+## Before commercial use
+
+This is a demonstration, not a production-readiness or legal-compliance claim.
+Confirm brand/trademark/domain availability, customer-facing policies, delivery
+areas, opening hours, tax rules, email sender approval, database recovery,
+monitoring, worker operation, capacity and provider limits before real customer
+onboarding. Plan assignment is configuration only, not subscription billing.

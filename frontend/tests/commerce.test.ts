@@ -1,0 +1,23 @@
+import {test} from "node:test";
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+import {BRAND,cartInputs,mutateCart,quoteFingerprint,requestKey,orderTransitions,availableOrderActions,money} from "../src/lib/commerce.ts";
+import type {LocalLine,Quote} from "../src/lib/types.ts";
+const line:LocalLine={menu_item_id:"dish",name:"Karahi",image_url:"/food/karahi.jpg",quantity:2,variant_id:"large",modifier_ids:["y","x"],notes:"Mild"};
+const quote:Quote={items:[{menu_item_id:"dish",name:"Karahi",quantity:2,variant_name:"Large",modifier_names:["Extra"],unit_price:"500.00",line_total:"1000.00",notes:"Mild"}],subtotal:"1000.00",delivery_fee:"100.00",tax:"150.00",total:"1250.00",currency:"PKR",quote_token:"signed-a"};
+test("cart mutation is immutable, bounded and removes zero quantity",()=>{const original=[line];assert.equal(mutateCart(original,0,3)[0].quantity,3);assert.equal(original[0].quantity,2);assert.equal(mutateCart(original,0,1000)[0].quantity,50);assert.deepEqual(mutateCart(original,0,0),[]);});
+test("public cart payload contains no client prices, payment state, branding or private data",()=>{assert.deepEqual(cartInputs([line]),[{menu_item_id:"dish",quantity:2,variant_id:"large",modifier_ids:["x","y"],notes:"Mild"}]);assert.deepEqual(line.modifier_ids,["y","x"]);});
+test("price, quantity, options, tax and delivery changes require explicit reconfirmation",()=>{const confirmed=quoteFingerprint(quote);for(const changed of [{...quote,total:"1251.00"},{...quote,tax:"151.00"},{...quote,delivery_fee:"0.00"},{...quote,items:[{...quote.items[0],quantity:3}]},{...quote,items:[{...quote.items[0],modifier_names:["Different"]}]}])assert.notEqual(quoteFingerprint(changed),confirmed);assert.equal(quoteFingerprint({...quote,quote_token:"signed-b"}),confirmed);});
+test("identical retries retain the original idempotency key; a new request has a new key",()=>{const original=requestKey(null,'{"items":[1]}',()=>"a");assert.equal(requestKey(original,original.payload,()=>"should-not-run"),original);assert.equal(requestKey(original,'{"items":[2]}',()=>"b").key,"b");});
+test("checkout persists and retries the exact original order after uncertain network results",()=>{const source=readFileSync(new URL("../src/components/checkout.tsx",import.meta.url),"utf8");assert.match(source,/JSON\.parse\(attempt\.payload\)/);assert.match(source,/"Idempotency-Key":attempt\.key/);assert.match(source,/if\(pending\.current\)/);assert.match(source,/e\.status<500&&e\.status!==408/);assert.doesNotMatch(source,/payment_status\s*:\s*["']paid/);assert.match(source,/confirmed!==quoteFingerprint\(quote\.data\)/);});
+test("cash order lifecycle has no terminal actions and no checkout paid shortcut",()=>{assert.deepEqual(orderTransitions.COMPLETED,[]);assert.deepEqual(orderTransitions.CANCELLED,[]);assert.ok(orderTransitions.READY.includes("COMPLETED"));const source=readFileSync(new URL("../src/components/orders.tsx",import.meta.url),"utf8");assert.match(source,/s==="COMPLETED"&&q\.data\.payment_status!=="paid"/);assert.match(source,/physically received/);});
+test("one ZAYQORA identity is shared across public and operational layouts",()=>{assert.equal(BRAND.name,"ZAYQORA");assert.equal(BRAND.tagline,"Good food. Beautifully connected.");const ui=readFileSync(new URL("../src/components/ui.tsx",import.meta.url),"utf8");const workspace=readFileSync(new URL("../src/components/workspace.tsx",import.meta.url),"utf8");const store=readFileSync(new URL("../src/components/storefront.tsx",import.meta.url),"utf8");assert.match(ui,/BRAND\.name/);assert.match(ui,/BRAND\.tagline/);assert.match(workspace,/<Brand\/>/);assert.match(store,/<Header\/>/);});
+test("currency formatting stays in Pakistani rupees",()=>{assert.match(money("1234.50"),/PKR|Rs/);assert.match(money("1234.50"),/1,234\.50/);});
+test("cash lifecycle actions honour payment, fulfilment and refund restrictions",()=>{
+ assert.deepEqual(availableOrderActions({status:"READY",fulfilment:"pickup",payment_status:"unpaid"}),[]);
+ assert.deepEqual(availableOrderActions({status:"READY",fulfilment:"pickup",payment_status:"paid"}),["COMPLETED"]);
+ assert.deepEqual(availableOrderActions({status:"READY",fulfilment:"delivery",payment_status:"paid"}),["OUT_FOR_DELIVERY"]);
+ assert.deepEqual(availableOrderActions({status:"OUT_FOR_DELIVERY",fulfilment:"delivery",payment_status:"paid"}),["COMPLETED"]);
+ assert.ok(!availableOrderActions({status:"CONFIRMED",fulfilment:"pickup",payment_status:"paid"}).includes("CANCELLED"));
+ assert.deepEqual(availableOrderActions({status:"PENDING",fulfilment:"pickup",payment_status:"paid"}),["CONFIRMED"]);
+});

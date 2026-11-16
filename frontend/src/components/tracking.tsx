@@ -1,0 +1,10 @@
+"use client";
+import {useQuery} from "@tanstack/react-query";
+import {api} from "@/lib/api";
+import {dateTime,money} from "@/lib/commerce";
+import type {Order} from "@/lib/types";
+import {Header,Footer,Badge,Loading,Notice,PageTitle} from "./ui";
+export function Tracking({token}:{token:string}){
+ const q=useQuery({queryKey:["tracking",token],queryFn:()=>api<Order>(`/public/orders/${encodeURIComponent(token)}`),refetchInterval:query=>query.state.data&&["COMPLETED","REJECTED","CANCELLED"].includes(query.state.data.status)?false:15_000,retry:false});
+ return <><Header/><main id="main" className="container section narrow"><PageTitle eyebrow="A little update from the kitchen" title="Your order, at a glance."/><p className="fine">Keep this private tracking link safe. Updates come from the restaurant, not live GPS. Times are Asia/Karachi.</p>{q.isPending?<Loading/>:q.isError?<Notice error>{q.error.message}<button onClick={()=>q.refetch()}>Retry status</button></Notice>:<><section className="panel"><div className="row between"><h2>{q.data.reference}</h2><Badge>{q.data.status}</Badge></div><p>{q.data.fulfilment} · {dateTime(q.data.created_at)}</p><Notice>{q.data.payment_status==="paid"?"The restaurant has recorded cash receipt.":"Pay in cash on pickup or delivery. No online payment has been taken."}</Notice><p><strong>{money(q.data.total)}</strong> · <Badge>{q.data.payment_status}</Badge></p>{q.data.items.map((i,n)=><div className="summary-item" key={n}><div>{i.quantity} × {i.name}<small>{[i.variant_name,...i.modifier_names].filter(Boolean).join(" · ")}</small></div><span>{money(i.line_total)}</span></div>)}</section><section className="panel"><h2>Order updates</h2><ol className="timeline">{q.data.history.map((h,n)=><li key={n}><strong>{h.status.replaceAll("_"," ")}</strong><time>{dateTime(h.created_at)}</time>{h.reason&&<p>{h.reason}</p>}</li>)}</ol><button className="secondary small" onClick={()=>q.refetch()} disabled={q.isFetching}>{q.isFetching?"Refreshing…":"Refresh status"}</button></section></>}</main><Footer/></>;
+}

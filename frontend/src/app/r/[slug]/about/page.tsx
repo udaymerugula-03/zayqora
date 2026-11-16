@@ -1,0 +1,4 @@
+import Link from "next/link";
+import {getRestaurant} from "@/lib/restaurant";
+export const metadata={title:"Our story"};
+export default async function About({params}:{params:Promise<{slug:string}>}){const {slug}=await params;const r=await getRestaurant(slug);return <main id="main" className="container section"><div className="split"><div><span className="eyebrow">The story behind the table</span><h1>{r.name}</h1><h2><em>{r.tagline}</em></h2><p>{r.description}</p><p>{r.cuisine} · {r.city}</p>{slug==="saffron-table"&&<p className="notice">Saffron Table is a demonstration restaurant, showcasing the ZAYQORA experience. Menu and restaurant details are demo data, not a real service offer.</p>}<Link className="button" href={`/r/${slug}/menu`}>Meet the menu ↗</Link></div><img className="rounded feature-photo" src={r.hero_image_url||"/food/hero.jpg"} alt={`Food at ${r.name}`}/></div></main>}
