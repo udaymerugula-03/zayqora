@@ -227,7 +227,7 @@ def test_delivery_requires_dispatch_and_cancelled_cash_rejected(api):
     another = create_order(client, key="another-key").json()
     another_path = BASE + "/orders/" + another["id"]
     assert client.patch(another_path + "/status", headers=auth,
-                        json={"status": "REJECTED"}).status_code == 200
+                        json={"status": "REJECTED", "reason": "Restaurant cannot fulfil this order."}).status_code == 200
     assert client.post(another_path + "/cash-payment", headers=auth).status_code == 409
 
 

@@ -86,6 +86,8 @@ test("editing menu prices preserves existing variant and modifier IDs",async({pa
   await page.getByRole("button",{name:"Edit",exact:true}).click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.getByLabel("Base price · PKR").fill("625.50");
+  const blobUrl="https://test-store.public.blob.vercel-storage.com/restaurant/item.jpg";
+  await page.getByLabel("Image path or HTTPS URL (bundled or uploaded)").fill(blobUrl);
   let payload:Record<string,unknown>|null=null;
   await page.route("**/api/v1/menu/items/test-item",async route=>{
     payload=route.request().postDataJSON();
@@ -93,7 +95,29 @@ test("editing menu prices preserves existing variant and modifier IDs",async({pa
   });
   await page.getByRole("button",{name:"Save menu item"}).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  expect(payload).toMatchObject({price:"625.50",variant_required:true,variants:[{id:"regular",name:"Regular",price_delta:"0.00"},{id:"large",name:"Large",price_delta:"200.00"}],modifiers:[{id:"raita",name:"Raita",price_delta:"80.00"}]});
+  expect(payload).toMatchObject({image_url:blobUrl,price:"625.50",variant_required:true,variants:[{id:"regular",name:"Regular",price_delta:"0.00"},{id:"large",name:"Large",price_delta:"200.00"}],modifiers:[{id:"raita",name:"Raita",price_delta:"80.00"}]});
+});
+test("reservation decline and cancellation require a three-character reason",async({page})=>{
+  await page.addInitScript(()=>sessionStorage.setItem("zayqora-token","test-owner"));
+  const reservation={id:"test-reservation",reference:"RSV-TEST",status:"REQUESTED",starts_at:"2027-01-01T14:00:00+05:00",ends_at:"2027-01-01T15:30:00+05:00",party_size:2,customer_name:"Test Guest",email:"guest@example.com",phone:"+923001234567",notes:"",table_id:"test-table"};
+  await page.route("**/api/v1/reservations?**",route=>route.fulfill({json:{items:[reservation],total:1,page:1,page_size:20}}));
+  await page.goto("/app/reservations");
+  await page.getByRole("button",{name:"Review",exact:true}).click();
+  for(const status of ["DECLINED","CANCELLED"]){
+    await page.getByLabel("Next status").selectOption(status);
+    const reason=page.getByLabel("Reason (required, at least 3 characters)");
+    await expect(reason).toHaveAttribute("minlength","3");
+    await reason.fill("ab");
+    expect(await reason.evaluate((input:HTMLTextAreaElement)=>input.checkValidity())).toBeFalsy();
+  }
+  await page.getByLabel("Reason (required, at least 3 characters)").fill("  Table unavailable  ");
+  let payload:unknown;
+  await page.route("**/api/v1/reservations/test-reservation/status",async route=>{
+    payload=route.request().postDataJSON();await route.fulfill({json:{...reservation,status:"CANCELLED"}});
+  });
+  await page.getByRole("button",{name:"Save reservation status"}).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  expect(payload).toEqual({status:"CANCELLED",reason:"Table unavailable"});
 });
 test("registration and token verification report actual email delivery state",async({page})=>{
   await page.goto("/register");

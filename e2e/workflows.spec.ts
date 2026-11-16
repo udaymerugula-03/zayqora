@@ -136,7 +136,7 @@ test("a guest reservation request appears in the owner queue and can be resolved
   await expect(row).toContainText("CONFIRMED");
   await row.getByRole("button", { name: "Review", exact: true }).click();
   await dialog.getByLabel("Next status").selectOption("CANCELLED");
-  await dialog.getByLabel("Reason (required)").fill("Demonstration complete; release this test capacity.");
+  await dialog.getByLabel(/Reason \(required/).fill("Demonstration complete; release this test capacity.");
   await dialog.getByRole("button", { name: "Save reservation status" }).click();
   await expect(row).toContainText("CANCELLED");
 });

@@ -119,6 +119,9 @@ def order_status(order_id: str, data: s.StatusInput, user=Depends(owner), db=Dep
         fail(409, f"Cannot move from {order.status} to {data.status}.")
     if data.status in {"CANCELLED", "REJECTED"} and order.payment_status == "paid":
         fail(409, "Paid orders cannot be cancelled: cash refunds are not implemented.")
+    if data.status in {"CANCELLED", "REJECTED"} and len(data.reason) < 3:
+        fail(422, "A reason of at least three characters is required to reject or cancel an order.",
+             "reason_required")
     if data.status == "OUT_FOR_DELIVERY" and order.fulfilment != "delivery":
         fail(409, "Pickup orders cannot be out for delivery.")
     if data.status == "COMPLETED":
@@ -169,6 +172,9 @@ def reservation_status(reservation_id: str, data: s.StatusInput,
     reservation = scoped(db, m.Reservation, reservation_id, user.restaurant_id, lock=True)
     if data.status not in RESERVATION_TRANSITIONS.get(reservation.status, set()):
         fail(409, f"Cannot move from {reservation.status} to {data.status}.")
+    if data.status in {"DECLINED", "CANCELLED"} and len(data.reason) < 3:
+        fail(422, "A reason of at least three characters is required to decline or cancel a reservation.",
+             "reason_required")
     old = reservation.status
     reservation.status = data.status
     audit(db, user, "reservation.status", user.restaurant_id, data.reason,

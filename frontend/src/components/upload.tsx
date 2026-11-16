@@ -27,8 +27,8 @@ export function Upload({label,value,onChange}:{label:string;value:string;onChang
     {busy&&<p role="status">Uploading photograph…</p>}
     {error&&<Notice error>{error}</Notice>}
     {value&&<div className="upload-preview"><img src={value} alt={`${label} preview`}/><button type="button" className="text-button" onClick={()=>onChange("")}>Remove image</button></div>}
-    <Field label="Image path (bundled or uploaded)">
-      <input value={value} placeholder="/food/biryani.jpg" pattern="(/food/.*|/media/.*)" title="Use a /food/ or /media/ path." onChange={e=>onChange(e.target.value)}/>
+    <Field label="Image path or HTTPS URL (bundled or uploaded)">
+      <input value={value} placeholder="/food/biryani.jpg" pattern="(/food/.*|/media/.*|https://.+)" title="Use a /food/ or /media/ path, or the HTTPS URL returned by an image upload." onChange={e=>onChange(e.target.value)}/>
     </Field>
   </div>;
 }
