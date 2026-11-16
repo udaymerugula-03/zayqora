@@ -12,7 +12,14 @@ async function signIn(page: Page, email: string) {
   await page.goto("/login");
   await page.getByLabel("Email address").fill(email);
   await page.getByLabel("Password", { exact: true }).fill(credentials()[email].password);
-  await page.getByRole("button", { name: "Sign in →" }).click();
+  try {
+    await page.getByRole("button", { name: "Sign in →" }).click();
+  } finally {
+    await page.evaluate(() => {
+      const field = document.querySelector<HTMLInputElement>('input[type="password"]');
+      if (field) field.value = "";
+    });
+  }
   await expect(page).toHaveURL(
     email === "admin@zayqora.demo" ? /\/platform\/overview$/ : /\/app\/dashboard$/,
   );
