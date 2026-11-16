@@ -1,5 +1,6 @@
 "use client";
 import {useState} from "react";
+import Link from "next/link";
 import {useQuery} from "@tanstack/react-query";
 import {api,send} from "@/lib/api";
 import type {Page,Restaurant,Plan} from "@/lib/types";
@@ -12,8 +13,10 @@ export function PlatformOverview(){
   const q=useQuery({queryKey:["platform-overview"],queryFn:()=>api<Overview>("/platform/overview")});
   return <>
     <PageTitle eyebrow="VIRELEO platform administration" title="The bigger picture. Clearly."><p>Actual tenant and order counts. No inferred revenue or recurring billing metrics.</p></PageTitle>
-    {q.isPending?<Loading/>:q.isError?<Notice error>{q.error.message}<button onClick={()=>q.refetch()}>Retry overview</button></Notice>:<div className="stats-grid">{Object.entries(q.data).map(([k,v])=><article className="stat-card" key={k}><span>{k.replaceAll("_"," ")}</span><strong>{v}</strong><small>Current platform records</small></article>)}</div>}
-    <section className="panel"><h2>Release 1 operating scope</h2><p>Restaurant sites, cash orders, reservations and owner workspaces. VIRELEO manages restaurant access and plan entitlements; no online payment provider, subscription collection, staff POS or inventory suite is enabled.</p></section>
+    <section className="platform-welcome"><div><span className="eyebrow">The restaurant collection, connected</span><h2>A considered platform.<br/><em>A clearer perspective.</em></h2><p>Manage restaurant access and plan entitlements, with a reason behind every administrative change.</p></div><span className="platform-monogram" aria-hidden="true">Z<span>✦</span></span></section>
+    {q.isPending?<Loading/>:q.isError?<Notice error>{q.error.message}<button onClick={()=>q.refetch()}>Retry overview</button></Notice>:<div className="stats-grid">{Object.entries(q.data).map(([k,v],index)=><article className="stat-card" key={k}><div className="stat-top"><span>{k.replaceAll("_"," ")}</span><span className="stat-index">0{index+1}</span></div><strong>{v}</strong><small>Current platform records</small></article>)}</div>}
+    <div className="platform-control-grid"><Link className="platform-control" href="/platform/tenants"><span className="eyebrow">01 / THE COLLECTION</span><h2>Restaurant access</h2><p>Review tenants, publication states and platform access. Every change remains server-authoritative.</p><strong>Manage restaurants ↗</strong></Link><Link className="platform-control" href="/platform/plans"><span className="eyebrow">02 / ROOM TO GROW</span><h2>Plan entitlements</h2><p>Maintain menu-item limits and active plans. Clear entitlements, without invented billing metrics.</p><strong>Review plans ↗</strong></Link></div>
+    <section className="panel scope-panel"><span className="eyebrow">A little operational clarity</span><h2>Release 1 operating scope</h2><p>Restaurant sites, cash orders, reservations and owner workspaces. VIRELEO manages restaurant access and plan entitlements; no online payment provider, subscription collection, staff POS or inventory suite is enabled.</p></section>
   </>;
 }
 export function Tenants(){

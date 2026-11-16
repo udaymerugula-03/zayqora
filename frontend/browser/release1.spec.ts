@@ -16,6 +16,36 @@ async function fillCheckout(page:Page){
   await page.getByRole("checkbox",{name:/I confirm this current total/}).check();
 }
 test.beforeEach(async({request})=>{await request.post("http://127.0.0.1:18117/__test/reset");});
+test("discovery filters real results and both mobile menus support keyboard dismissal",async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto("/");
+  const search=page.getByRole("searchbox",{name:"Search restaurants or cuisine"});
+  await search.fill("not-a-published-restaurant");
+  await expect(page.getByText("No restaurants match this search. Try another city or craving.")).toBeVisible();
+  await search.fill("biryani");
+  await expect(page.getByText("0 places to discover",{exact:true})).toBeVisible();
+  await search.fill("Saffron");
+  await page.getByLabel("Choose city").selectOption("Lahore");
+  await expect(page.locator(".restaurant-card")).toHaveCount(1);
+  const menu=page.getByRole("button",{name:"Menu",exact:true});
+  await menu.click();
+  await expect(page.getByRole("navigation",{name:"Main navigation"})).toBeVisible();
+  await page.getByRole("navigation",{name:"Main navigation"}).getByRole("link").first().focus();
+  await page.keyboard.press("Escape");
+  await expect(menu).toBeFocused();
+  await expect(menu).toHaveAttribute("aria-expanded","false");
+  await page.evaluate(()=>sessionStorage.setItem("zayqora-token","test-owner"));
+  await page.goto("/app/dashboard");
+  const workspaceMenu=page.getByRole("button",{name:"Workspace menu"});
+  await workspaceMenu.click();
+  await page.getByRole("navigation",{name:"Workspace",exact:true}).getByRole("link",{name:/Orders/}).focus();
+  await page.keyboard.press("Escape");
+  await expect(workspaceMenu).toBeFocused();
+  await workspaceMenu.click();
+  await page.getByRole("navigation",{name:"Workspace",exact:true}).getByRole("link",{name:/Orders/}).click();
+  await expect(page).toHaveURL(/\/app\/orders$/);
+  await expect(workspaceMenu).toHaveAttribute("aria-expanded","false");
+});
 test("cash checkout requires current quote reconfirmation after a price change",async({page,request})=>{
   await addDish(page);
   await page.getByRole("link",{name:/View bag/}).click();
@@ -69,7 +99,7 @@ test("throttled recovery preserves the original committed order attempt",async({
 });
 test("workspace gates roles, loads real endpoint states, and signs out",async({page})=>{
   await page.goto("/app/dashboard");await expect(page).toHaveURL(/\/login$/);
-  await page.getByLabel("Email address").fill("owner@example.com");await page.getByLabel("Password",{exact:true}).fill("test-browser-password");
+  await page.getByLabel("Email address").fill("owner@example.com");await page.getByLabel("Password",{exact:true}).fill(crypto.randomUUID());
   await page.getByRole("button",{name:"Sign in →"}).click();await expect(page).toHaveURL(/\/app\/dashboard$/);
   await expect(page.getByRole("heading",{name:"Hello, Demo."})).toBeVisible();
   for(const [path,heading] of [["orders","Every order. A little more organised."],["menu","Fresh ideas. Beautifully served."],["reservations","Every table has a story."],["reports","Your sales, in perspective."],["settings","Your restaurant. Your way."],["notifications","Your notification outbox."]]){
@@ -125,7 +155,7 @@ test("registration and token verification report actual email delivery state",as
   await page.getByLabel("Restaurant name",{exact:true}).fill("Demo Kitchen");
   await page.getByLabel("Restaurant URL name").fill("demo-kitchen");
   await page.getByLabel("Email address").fill("new@example.com");
-  await page.getByLabel(/Password/).fill("safe-test-password");
+  await page.getByLabel(/Password/).fill(crypto.randomUUID());
   await page.getByRole("button",{name:"Create restaurant account"}).click();
   await expect(page.getByText(/Email delivery: provider_not_configured/)).toBeVisible();
   await page.goto("/verify-email?token=test-verification-token");
@@ -164,11 +194,12 @@ test("forms enforce the same cart, reservation and restaurant bounds as the API"
 for(const width of [320,390,768,1440]){
   test(`shared branding and zero document overflow at ${width}px`,async({page})=>{
     await page.setViewportSize({width,height:900});
-    for(const path of ["/","/pricing","/login","/register","/r/saffron-table","/r/saffron-table/menu","/r/saffron-table/reservations","/r/saffron-table/contact"]){
+    for(const path of ["/","/pricing","/login","/register","/verify-email","/privacy","/terms","/r/saffron-table","/r/saffron-table/menu","/r/saffron-table/cart","/r/saffron-table/checkout","/r/saffron-table/reservations","/r/saffron-table/about","/r/saffron-table/contact","/track/test-private-token"]){
       await page.goto(path);
       await expect(page.getByRole("link",{name:"ZAYQORA home"}).first()).toBeVisible();
       await expect(page.locator("h1")).toHaveCount(1);
       expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),path).toBeTruthy();
+      if([390,1440].includes(width)&&["/login","/r/saffron-table","/r/saffron-table/menu","/r/saffron-table/reservations","/track/test-private-token"].includes(path))await page.screenshot({path:`test-results/redesign-${path.replaceAll("/","-")}-${width}.png`,fullPage:true});
     }
     await page.goto("/");
     await page.screenshot({path:`test-results/home-${width}.png`,fullPage:true});
@@ -177,12 +208,14 @@ for(const width of [320,390,768,1440]){
       await page.goto(path);
       await expect(page.locator("main h1")).toHaveCount(1);
       expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),path).toBeTruthy();
+      if([390,1440].includes(width)&&["/app/dashboard","/app/settings"].includes(path))await page.screenshot({path:`test-results/redesign-${path.replaceAll("/","-")}-${width}.png`,fullPage:true});
     }
     await page.evaluate(()=>sessionStorage.setItem("test-role","test-admin"));
     for(const path of ["/platform/overview","/platform/tenants","/platform/plans"]){
       await page.goto(path);
       await expect(page.locator("main h1")).toHaveCount(1);
       expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),path).toBeTruthy();
+      if([390,1440].includes(width)&&path==="/platform/overview")await page.screenshot({path:`test-results/redesign-platform-${width}.png`,fullPage:true});
     }
   });
 }

@@ -23,8 +23,8 @@ def seed(db):
         db.flush()
     credentials = {}
     for slug, name, email in (
-        ("saffron-table", "Saffron Table", "owner@saffrontable.demo"),
-        ("garden-cafe", "Garden Café", "owner@gardencafe.demo"),
+        ("saffron-table", "Saffron Table", "owner@zayqora.demo"),
+        ("garden-cafe", "Garden Café", "garden@zayqora.demo"),
     ):
         restaurant = db.scalar(select(m.Restaurant).where(m.Restaurant.slug == slug))
         if restaurant and "demonstration restaurant" not in restaurant.description.lower():

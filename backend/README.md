@@ -14,12 +14,12 @@ $env:PUBLIC_ORIGIN = 'http://localhost:3000'
 backend\.venv\Scripts\python -m alembic -c backend\alembic.ini upgrade head
 $env:PYTHONPATH = 'backend'
 backend\.venv\Scripts\python -m app.seed
-backend\.venv\Scripts\python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8085
+backend\.venv\Scripts\python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8086 --no-access-log
 ```
 
-Seed writes randomly generated passwords **only** to root `.demo-credentials.json` (must be gitignored). It does not print passwords, overwrite existing accounts, or create orders/revenue. Optional `--credentials-output .demo-credentials-private.json` must name an ignored hidden JSON file inside the root; the CLI checks Git ignore rules and refuses non-ignored output. Keep this file private and delete it when no longer needed; Windows operators must restrict its ACL to the service account. Accounts: `owner@saffrontable.demo`, `owner@gardencafe.demo`, `admin@zayqora.demo`. Seeded owner accounts are explicitly pre-verified demo exceptions. Restaurants: `saffron-table`, `garden-cafe`.
+Seed writes randomly generated passwords **only** to root `.demo-credentials.json` (must be gitignored). It does not print passwords, overwrite existing accounts, or create orders/revenue. Optional `--credentials-output .demo-credentials-private.json` must name an ignored hidden JSON file inside the root; the CLI checks Git ignore rules and refuses non-ignored output. Keep this file private and delete it when no longer needed; Windows operators must restrict its ACL to the service account. Accounts: `owner@zayqora.demo`, `garden@zayqora.demo`, `admin@zayqora.demo`. Seeded owner accounts are explicitly pre-verified demo exceptions. Restaurants: `saffron-table`, `garden-cafe`.
 
-API: `http://127.0.0.1:8085/api/v1`; OpenAPI `/docs`; readiness `/api/v1/health`. Frontend bundled `/food/*.jpg` assets are not copied by the backend. Requests authenticate with `Authorization: Bearer <access_token>`. Set frontend API origin to the actual API URL. All monetary values are two-decimal PKR strings. Restaurant timezone is Asia/Karachi; stored timestamps are UTC. Default demo hours 00:00–23:59 local, editable by owner.
+API: `http://127.0.0.1:8086/api/v1`; OpenAPI `/docs`; readiness `/api/v1/health`. Frontend bundled `/food/*.jpg` assets are not copied by the backend. Requests authenticate with `Authorization: Bearer <access_token>`. Set frontend API origin to the actual API URL. All monetary values are two-decimal PKR strings. Restaurant timezone is Asia/Karachi; stored timestamps are UTC. Default demo hours 00:00–23:59 local, editable by owner.
 
 If another application already owns port 8085, do not stop it: use `--port 8086` and have the parent/operator point the frontend API origin at `http://127.0.0.1:8086`.
 

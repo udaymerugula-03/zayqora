@@ -1,6 +1,6 @@
 import type { CartLine, LocalLine, Quote } from "./types.ts";
 export const BRAND = { name: "ZAYQORA", tagline: "Good food. Beautifully connected." } as const;
-export const money = (value: string | number = 0) => new Intl.NumberFormat("en-PK", { style: "currency", currency: "PKR", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value));
+export const money = (value: string | number = 0) => new Intl.NumberFormat("en-PK", { style: "currency", currency: "PKR", currencyDisplay: "code", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value));
 export const dateTime = (value: string) => new Intl.DateTimeFormat("en-PK", {timeZone: "Asia/Karachi", dateStyle: "medium", timeStyle: "short"}).format(new Date(value));
 export const localDate = () => new Intl.DateTimeFormat("en-CA", {timeZone: "Asia/Karachi", year: "numeric", month: "2-digit", day: "2-digit"}).format(new Date());
 export function cartInputs(lines: LocalLine[]): CartLine[] { return lines.map(({menu_item_id, quantity, variant_id, modifier_ids, notes}) => ({menu_item_id, quantity, variant_id, modifier_ids: [...modifier_ids].sort(), notes})); }

@@ -1,0 +1,210 @@
+{
+  "captured_at": "2026-11-16T11:44:21.622Z",
+  "environment": "Local production build backed by the isolated hosted demonstration database",
+  "source": "http://127.0.0.1:3000",
+  "order_reference": "ZQ-72501CBD10",
+  "reservation_reference": "RS-F6EEA980C4",
+  "screenshots": [
+    {
+      "file": "01-platform-home.jpg",
+      "route": "/",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "02-restaurant-home.jpg",
+      "route": "/r/saffron-table",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "03-menu.jpg",
+      "route": "/r/saffron-table/menu",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "04-customisation.jpg",
+      "route": "/r/saffron-table/menu",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "05-cart.jpg",
+      "route": "/r/saffron-table/cart",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "06-checkout.jpg",
+      "route": "/r/saffron-table/checkout",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "07-order-received.jpg",
+      "route": "/track/[private-token]",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "08-sign-in.jpg",
+      "route": "/login",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "09-owner-dashboard.jpg",
+      "route": "/app/dashboard",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "10-order-processing.jpg",
+      "route": "/app/orders",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "11-cash-receipt.jpg",
+      "route": "/app/orders",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "12-order-completed.jpg",
+      "route": "/track/[private-token]",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "13-reports.jpg",
+      "route": "/app/reports",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "14-reservation-form.jpg",
+      "route": "/r/saffron-table/reservations",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "15-reservation-received.jpg",
+      "route": "/r/saffron-table/reservations",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "16-owner-reservation.jpg",
+      "route": "/app/reservations",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "17-dining-tables.jpg",
+      "route": "/app/reservations",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "18-menu-management.jpg",
+      "route": "/app/menu",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "19-settings.jpg",
+      "route": "/app/settings",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "20-notifications.jpg",
+      "route": "/app/notifications",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "21-platform-overview.jpg",
+      "route": "/platform/overview",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "22-platform-tenants.jpg",
+      "route": "/platform/tenants",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "23-platform-plans.jpg",
+      "route": "/platform/plans",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "24a-mobile-menu.jpg",
+      "route": "/r/saffron-table/menu",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "file": "24b-mobile-owner.jpg",
+      "route": "/app/dashboard",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    }
+  ],
+  "mobile_refreshed_at": "2026-11-16T11:59:07.930Z"
+}

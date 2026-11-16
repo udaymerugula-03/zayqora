@@ -37,9 +37,9 @@ function SettingsForm({value:r}:{value:Restaurant}){
     };
     await action.run(()=>send<Restaurant>("/restaurant",payload,"PATCH"),"Restaurant settings saved. Publication is subject to server setup validation.");
   }
-  return <form onSubmit={save} className="settings-form">
+  return <div className="settings-layout"><nav className="settings-navigation" aria-label="Restaurant settings sections"><span className="eyebrow">Set the scene</span>{[["details","Restaurant details"],["imagery","Imagery & identity"],["pricing","Services & pricing"],["hours","Opening hours"],["rules","Reservation rules"],["publish","Publication"]].map(([id,label],index)=><a key={id} href={`#settings-${id}`}><span>0{index+1}</span>{label}</a>)}<p>Changes apply when you save the restaurant settings below.</p></nav><form onSubmit={save} className="settings-form">
     <ActionMessages action={action}/>
-    <section className="panel">
+    <section id="settings-details" className="panel">
       <div className="row between wrap"><h2>Restaurant details</h2><Link className="text-link" href={`/r/${r.slug}`} target="_blank">View public site ↗</Link></div>
       <div className="form-grid">
         <Field label="Restaurant name"><input name="name" required minLength={2} maxLength={160} defaultValue={r.name}/></Field>
@@ -55,12 +55,12 @@ function SettingsForm({value:r}:{value:Restaurant}){
       </div>
       <p className="fine">Restaurant URL: /r/{r.slug} · Currency: PKR · Timezone: Asia/Karachi</p>
     </section>
-    <section className="panel">
+    <section id="settings-imagery" className="panel">
       <h2>Restaurant imagery</h2>
       <p className="fine">Your restaurant identity is displayed beneath the shared ZAYQORA header, not as a replacement platform brand.</p>
       <div className="form-grid"><Upload label="Restaurant logo" value={logo} onChange={setLogo}/><Upload label="Hero photograph" value={hero} onChange={setHero}/></div>
     </section>
-    <section className="panel">
+    <section id="settings-pricing" className="panel">
       <h2>Services &amp; pricing</h2>
       <div className="actions wrap">
         <label className="choice"><input name="allow_pickup" type="checkbox" defaultChecked={r.allow_pickup}/>Allow pickup</label>
@@ -74,7 +74,7 @@ function SettingsForm({value:r}:{value:Restaurant}){
       </div>
       <Notice>Only cash on delivery and pickup are supported. Online payments are disabled.</Notice>
     </section>
-    <section className="panel">
+    <section id="settings-hours" className="panel">
       <h2>Opening hours</h2><p className="fine">Use local Asia/Karachi times. A closed day will not offer reservation slots.</p>
       {["mon","tue","wed","thu","fri","sat","sun"].map(day=>{
         const h=hours[day]||{open:"12:00",close:"23:00",closed:false};
@@ -86,7 +86,7 @@ function SettingsForm({value:r}:{value:Restaurant}){
         </div>;
       })}
     </section>
-    <section className="panel">
+    <section id="settings-rules" className="panel">
       <h2>Reservation rules</h2>
       <div className="form-grid">
         <Field label="Dining duration · minutes"><input type="number" name="reservation_duration_minutes" required min="15" max="360" defaultValue={r.reservation_duration_minutes}/></Field>
@@ -95,14 +95,14 @@ function SettingsForm({value:r}:{value:Restaurant}){
       </div>
       <Link href="/app/reservations">Manage dining tables and reservation requests →</Link>
     </section>
-    <section className="panel">
+    <section id="settings-publish" className="panel">
       <h2>Publish your restaurant</h2>
       <p>The server checks your setup before publishing. Suspended restaurants cannot accept public orders or reservations.</p>
       <p>Platform status: <Badge>{r.status}</Badge></p>
       <label className="choice"><input type="checkbox" checked={published} onChange={e=>setPublished(e.target.checked)}/>Publish restaurant website</label>
       <ActionMessages action={action}/><button disabled={action.busy}>{action.busy?"Saving restaurant…":"Save restaurant settings"}</button>
     </section>
-  </form>;
+  </form></div>;
 }
 type Notification={id:string;kind:string;subject:string;status:string;created_at:string};
 export function Notifications(){
@@ -110,6 +110,7 @@ export function Notifications(){
   const q=useQuery({queryKey:["notifications",page],queryFn:()=>api<Page<Notification>>(`/notifications?page=${page}&page_size=20`),refetchInterval:30_000});
   return <>
     <PageTitle eyebrow="Transparency, not assumed delivery" title="Your notification outbox."><p>Delivery state is reported by the backend. Queued, failed or unconfigured messages are not delivered emails.</p></PageTitle>
+    <div className="outbox-guide"><span aria-hidden="true">✉</span><div><h2>A message in the outbox is only the beginning.</h2><p>Pending messages await processing. Failed or unconfigured entries are not delivered. A sent state reports the configured mail service&apos;s outcome—not proof of arrival in a guest&apos;s inbox.</p></div></div>
     {q.isPending?<Loading/>:q.isError?<Notice error>{q.error.message}<button onClick={()=>q.refetch()}>Retry outbox</button></Notice>:<section className="panel">
       {q.data.items.length?<div className="table-scroll"><table>
         <thead><tr><th>Kind</th><th>Subject</th><th>Delivery state</th><th>Created · Karachi</th></tr></thead>

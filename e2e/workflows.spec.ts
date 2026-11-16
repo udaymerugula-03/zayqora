@@ -47,14 +47,21 @@ test("guest cash order reaches paid completion through the owner workspace", asy
   await page.getByLabel("Phone number").fill("+923001234567");
   await page.getByRole("checkbox", { name: /I agree to the terms/ }).check();
   await page.getByRole("checkbox", { name: /I confirm this current total/ }).check();
+  const creation = page.waitForResponse(response =>
+    response.request().method() === "POST" &&
+    new URL(response.url()).pathname === "/api/v1/public/restaurants/saffron-table/orders",
+  );
   await page.getByRole("button", { name: "Place cash order →" }).click();
+  const created = await creation;
+  expect(created.status()).toBe(201);
+  const { reference }: { reference: string } = await created.json();
   await expect(page).toHaveURL(/\/track\/[^/]+$/);
   const trackingUrl = page.url();
   await expect(page.getByText("unpaid", { exact: true })).toBeVisible();
-  const reference = await page.locator("main .panel h2").first().innerText();
+  await expect(page.locator("main")).toContainText(reference);
   await page.screenshot({ path: testInfo.outputPath("tracking.png"), fullPage: true });
 
-  await signIn(page, "owner@saffrontable.demo");
+  await signIn(page, "owner@zayqora.demo");
   await page.screenshot({ path: testInfo.outputPath("owner-dashboard.png"), fullPage: true });
   await page.goto("/app/orders");
   const row = page.getByRole("row").filter({ hasText: reference });
@@ -88,7 +95,7 @@ test("live workspace pages retain branding and load their actual API data", asyn
   page,
 }, testInfo) => {
   test.setTimeout(120_000);
-  await signIn(page, "owner@saffrontable.demo");
+  await signIn(page, "owner@zayqora.demo");
   for (const path of ["menu", "orders", "reservations", "settings", "notifications"]) {
     await page.goto(`/app/${path}`);
     await expect(page.locator("main h1")).toHaveCount(1);
@@ -99,6 +106,8 @@ test("live workspace pages retain branding and load their actual API data", asyn
   }
   await page.goto("/platform/overview");
   await expect(page).toHaveURL(/\/app\/dashboard$/);
+  const workspaceMenu = page.getByRole("button", { name: "Workspace menu" });
+  if (await workspaceMenu.isVisible()) await workspaceMenu.click();
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL(/\/login$/);
   await signIn(page, "admin@zayqora.demo");
@@ -133,7 +142,7 @@ test("a guest reservation request appears in the owner queue and can be resolved
   await expect(page.getByText("REQUESTED", { exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("reservation-received.png"), fullPage: true });
 
-  await signIn(page, "owner@saffrontable.demo");
+  await signIn(page, "owner@zayqora.demo");
   await page.goto("/app/reservations");
   const row = page.getByRole("row").filter({ hasText: reference });
   await row.getByRole("button", { name: "Review", exact: true }).click();

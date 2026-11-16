@@ -100,12 +100,13 @@ export function CartCheckout({checkout=false}:{checkout?:boolean}){
     </section>
   </main>;
   if(!lines.length)return <main id="main" className="container section"><PageTitle title="A little room for something good."/><Empty>Your bag is empty. <Link href={`/r/${r.slug}/menu`}>Explore the menu →</Link></Empty></main>;
-  return <main id="main" className="container section">
+  return <main id="main" className="container section checkout-page">
+    <nav className="checkout-progress" aria-label="Order progress"><Link href={`/r/${r.slug}/menu`}><span>01</span> The menu</Link><Link aria-current={!checkout?"step":undefined} href={`/r/${r.slug}/cart`}><span>02</span> Your bag</Link><span aria-current={checkout?"step":undefined}><span>03</span> Cash checkout</span></nav>
     <PageTitle eyebrow={`${r.name} · ${checkout?"The final little details":"Made for your appetite"}`} title={checkout?"Good food is almost yours.":"Your bag of good things."}/>
     <div className="checkout-grid">
       <section className="panel">
         {checkout?<>
-          <h2>Your details</h2>
+          <div className="form-section-heading"><span>01 / GUEST DETAILS</span><h2>Your details</h2><p>A few details to help the restaurant look after your order.</p></div>
           <form id="checkout-form" onSubmit={handleSubmit(place)} noValidate>
             <div className="form-grid">
               <Field label="Full name" error={errors.customer_name?.message}><input autoComplete="name" {...register("customer_name")}/></Field>
@@ -119,7 +120,7 @@ export function CartCheckout({checkout=false}:{checkout?:boolean}){
             {r.slug==="saffron-table"&&<Notice>Demonstration restaurant. This order will not result in real food delivery. Do not use sensitive personal details.</Notice>}
           </form>
         </>:<>
-          <h2>Freshly chosen</h2>
+          <div className="form-section-heading"><span>YOUR SELECTION</span><h2>Freshly chosen</h2><p>A little of everything you&apos;re looking forward to.</p></div>
           {lines.map((l,i)=><div className="cart-line" key={i}>
             <img src={l.image_url||"/food/hero.jpg"} alt=""/>
             <div>
@@ -132,7 +133,7 @@ export function CartCheckout({checkout=false}:{checkout?:boolean}){
         </>}
       </section>
       <aside className="panel order-summary">
-        <h2>Order summary</h2>
+        <span className="eyebrow">The final little details</span><h2>Order summary</h2>
         <fieldset><legend>How would you like your order?</legend><div className="fulfilment-options">
           {r.allow_pickup&&<label className="choice"><input type="radio" checked={fulfilment==="pickup"} disabled={placing} onChange={()=>setFulfilment("pickup")}/>Pickup</label>}
           {r.allow_delivery&&<label className="choice"><input type="radio" checked={fulfilment==="delivery"} disabled={placing} onChange={()=>setFulfilment("delivery")}/>Delivery</label>}

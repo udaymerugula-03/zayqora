@@ -34,7 +34,8 @@ export function PublicReservations(){
   }
   const maxDate=new Date(`${localDate()}T12:00:00+05:00`);
   maxDate.setUTCDate(maxDate.getUTCDate()+r.reservation_days_ahead);
-  return <main id="main" className="container section">
+  return <main id="main" className="container section reservation-page">
+    <div className="reservation-photo-band"><img src="/food/hero.jpg" alt="A restaurant setting for your next gathering"/><span>For the moments best shared.</span><small>TABLE REQUESTS · ASIA/KARACHI</small></div>
     <PageTitle eyebrow={`${r.name} · Make a little time for togetherness`} title="A table for your next moment.">
       <p>Check available slots in Pakistan time. Requests are reviewed by the restaurant.</p>
     </PageTitle>
@@ -45,7 +46,7 @@ export function PublicReservations(){
       <Link className="button secondary" href={`/r/${r.slug}/contact`}>Restaurant contact details</Link>
     </section>:<div className="checkout-grid">
       <section className="panel">
-        <h2>Find your table</h2>
+        <div className="form-section-heading"><span>01 / THE OCCASION</span><h2>Find your table</h2><p>Choose your date, party size and preferred time.</p></div>
         <div className="form-grid">
           <Field label="Date · Asia/Karachi"><input type="date" min={localDate()} max={maxDate.toISOString().slice(0,10)} value={date} onChange={e=>{setDate(e.target.value);setSlot("");}}/></Field>
           <Field label="Number of guests"><input type="number" min="1" max="30" value={size} onChange={e=>{setSize(Number(e.target.value));setSlot("");}}/></Field>
@@ -59,7 +60,7 @@ export function PublicReservations(){
         <p className="fine">A slot can be taken before you submit. The server checks table capacity and overlapping reservations when saving your request.</p>
       </section>
       <section className="panel">
-        <h2>The little details</h2>
+        <div className="form-section-heading"><span>02 / YOUR GUEST DETAILS</span><h2>The little details</h2><p>So the restaurant can keep in touch about your request.</p></div>
         <form onSubmit={submit}>
           <Field label="Full name"><input required name="customer_name" minLength={2} maxLength={120} autoComplete="name"/></Field>
           <div className="form-grid">

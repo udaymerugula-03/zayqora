@@ -88,7 +88,7 @@ backend\.venv\Scripts\python -m app.seed
 Start the API in one terminal:
 
 ```powershell
-backend\.venv\Scripts\python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8086
+backend\.venv\Scripts\python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8086 --no-access-log
 ```
 
 Start the frontend in a second terminal:
@@ -104,8 +104,11 @@ application to reclaim port 8085. If you choose a different API port, set
 
 Both owner and platform administrator accounts use `/login`; successful login
 routes each role to the correct workspace. Demonstration accounts are
-`owner@saffrontable.demo`, `owner@gardencafe.demo`, and `admin@zayqora.demo`.
-Their generated passwords are only in the ignored `.demo-credentials.json`.
+`owner@zayqora.demo`, `garden@zayqora.demo`, and `admin@zayqora.demo`.
+Their passwords are only in the ignored `.demo-credentials.json`. The hosted
+fictional demo uses user-requested simplified passwords; never reuse these
+credentials for a real restaurant. Fresh database seeding still generates
+random passwords rather than embedding shared credentials in source.
 
 | Screen | Path |
 | --- | --- |
@@ -166,3 +169,14 @@ Confirm brand/trademark/domain availability, customer-facing policies, delivery
 areas, opening hours, tax rules, email sender approval, database recovery,
 monitoring, worker operation, capacity and provider limits before real customer
 onboarding. Plan assignment is configuration only, not subscription billing.
+
+## Client technical documentation
+
+The client handover is in
+`docs\ZAYQORA_Technical_Documentation_With_Flow_Screenshots_16_Nov_2026.docx`.
+It covers the implemented screens, architecture, technology stack, Pakistan/PKR
+pricing, cash-order and reservation flows, deployment and release limitations,
+with 24 actual workflow screenshots. The editable source is
+`docs\ZAYQORA_Technical_Documentation_and_Flows.md`; screenshot assets and their
+sanitized capture manifest are alongside it. Passwords and private tracking
+links are intentionally excluded.

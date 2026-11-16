@@ -9,6 +9,9 @@ import Link from "next/link";
 import {send} from "@/lib/api";
 import type {User} from "@/lib/types";
 import {Field,Notice,Loading} from "./ui";
+export function AuthExperience({children}:{children:React.ReactNode}){
+  return <div className="auth-experience"><aside className="auth-editorial"><img src="/food/hero.jpg" alt="A welcoming restaurant dining room"/><div><span className="eyebrow">The people behind the experience</span><h2>Great hospitality.<br/><em>Beautifully organised.</em></h2><p>Your menu, your guests, your next chapter.<br/>One considered space for it all.</p><span className="auth-editorial-footer">ZAYQORA · THE RESTAURANT WORKSPACE</span></div></aside><div className="auth-form-side">{children}<div className="auth-assurance"><span>Tab-scoped sessions</span><span>Owner &amp; platform access</span></div></div></div>;
+}
 
 const loginSchema=z.object({
   email:z.email("Enter a valid email address."),
@@ -42,7 +45,7 @@ export function AuthForm({register:creating=false}:{register?:boolean}) {
     }catch(e){setError((e as Error).message);}
   }
   return <div className="auth-card">
-    <span className="eyebrow">{creating?"A fresh start for your restaurant":"Your restaurant, connected"}</span>
+    <div className="auth-step"><span>✦</span><small>{creating?"Your restaurant journey begins here":"Your workspace awaits"}</small></div>
     <h1>{creating?"Make yourself at home.":"Welcome back."}</h1>
     <p>{creating?"Create your owner account. Verify your email before signing in.":"Sign in to your owner or VIRELEO platform workspace."}</p>
     {message?<Notice>{message}<p><Link href="/login">Return to sign in</Link></p></Notice>:<form onSubmit={handleSubmit(submit)} noValidate>

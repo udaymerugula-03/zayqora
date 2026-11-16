@@ -16,23 +16,25 @@ export function PublicMenu(){
   const [added,setAdded]=useState("");
   const q=useQuery({queryKey:["menu",restaurant.slug],queryFn:()=>api<{categories:Category[]}>(`/public/restaurants/${restaurant.slug}/menu`)});
   const matches=(i:MenuItem)=>`${i.name} ${i.description}`.toLowerCase().includes(search.toLowerCase());
-  return <main id="main" className="container section">
-    <PageTitle eyebrow={`${restaurant.name} · Freshly prepared, thoughtfully served`} title="A little of what you love."><p>Find your favourites. Make them yours. Pay in cash.</p></PageTitle>
+  return <main id="main" className="container section menu-page">
+    <div className="menu-masthead"><div><PageTitle eyebrow={`${restaurant.name} · The menu`} title="A little of what you love."><p>Familiar favourites. Something unexpected. Every choice, a little more yours.</p></PageTitle><div className="menu-masthead-note"><span>Made to order, made yours</span><span>Cash only · All prices PKR</span></div></div><img src="/food/karahi.jpg" alt="A richly flavoured dish with fresh herbs"/></div>
     <div className="menu-toolbar">
       <label className="search-field"><span className="sr-only">Search menu</span><span aria-hidden="true">⌕</span><input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="What are you craving?"/></label>
       <Link className="button secondary" href={`/r/${restaurant.slug}/cart`}>View bag · {lines.reduce((s,l)=>s+l.quantity,0)}</Link>
     </div>
     {added&&<Notice>{added} added to your bag. <Link href={`/r/${restaurant.slug}/cart`}>Review your bag →</Link></Notice>}
     {lines.length>=50&&<Notice>The bag supports up to 50 item selections. Review your bag before adding another.</Notice>}
-    {q.isPending?<Loading/>:q.isError?<Notice error>{q.error.message}<button onClick={()=>q.refetch()}>Retry menu</button></Notice>:<>
+    {q.isPending?<Loading/>:q.isError?<Notice error>{q.error.message}<button onClick={()=>q.refetch()}>Retry menu</button></Notice>:<div className="menu-catalogue">
+      <aside className="menu-category-rail"><span className="eyebrow">Find your flavour</span>
       <div className="category-tabs" role="group" aria-label="Menu category">
         <button className={!category?"selected":""} aria-pressed={!category} onClick={()=>setCategory("")}>All dishes</button>
-        {q.data.categories.map(c=><button className={category===c.id?"selected":""} aria-pressed={category===c.id} key={c.id} onClick={()=>setCategory(c.id)}>{c.name}</button>)}
+        {q.data.categories.map(c=><button className={category===c.id?"selected":""} aria-pressed={category===c.id} key={c.id} onClick={()=>setCategory(c.id)}>{c.name}<span>{c.items.length}</span></button>)}
       </div>
+      <div className="menu-dietary-note"><strong>A little consideration.</strong><p>Questions about ingredients or allergies? Please contact the restaurant before ordering.</p><Link href={`/r/${restaurant.slug}/contact`}>Get in touch ↗</Link></div></aside><div className="menu-results">
       {q.data.categories.filter(c=>!category||c.id===category).map(c=>{
         const items=c.items.filter(matches);
         return items.length?<section className="menu-section" key={c.id}>
-          <h2>{c.name}</h2><div className="menu-grid">{items.map(i=><article className={`menu-card ${!i.available?"sold-out":""}`} key={i.id}>
+          <div className="menu-category-heading"><h2>{c.name}</h2><span>{items.length} dish{items.length===1?"":"es"}</span></div><div className="menu-grid">{items.map(i=><article className={`menu-card ${!i.available?"sold-out":""}`} key={i.id}>
             <div className="menu-image"><img src={i.image_url||"/food/hero.jpg"} alt={i.name} loading="lazy"/>{i.featured&&<span className="image-label">Kitchen selection</span>}</div>
             <div className="card-body">
               <div className="row between"><h3>{i.name}</h3>{!i.available&&<span className="badge">Sold out</span>}</div>
@@ -43,7 +45,7 @@ export function PublicMenu(){
         </section>:null;
       })}
       {!q.data.categories.some(c=>(!category||c.id===category)&&c.items.some(matches))&&<Empty>No dishes match. Try another category or search.</Empty>}
-    </>}
+    </div></div>}
     {item&&<ItemDialog item={item} close={()=>setItem(null)} add={line=>{add(line);setAdded(item.name);setItem(null);}}/>}
     <p className="fine">Ingredient or allergy questions? Contact the restaurant before ordering. Menu images may be illustrative. Final totals are calculated by the restaurant service.</p>
   </main>;

@@ -26,15 +26,17 @@ export function Reports({report=false}:{report?:boolean}){
     <PageTitle eyebrow={report?"Real numbers. Clear definitions.":"A fresh look at your restaurant"} title={report?"Your sales, in perspective.":`Hello, ${user.full_name.split(" ")[0]}.`}>
       <p>{report?"Choose a local date range. Only actual backend records are included; each metric retains the definition shown below.":"Orders, reservations and the details that need your attention."}</p>
     </PageTitle>
+    {!report&&<section className="workspace-welcome"><div><span className="eyebrow">A little clarity for your day</span><h2>Behind every great meal,<br/><em>a well-considered service.</em></h2><p>Your live restaurant snapshot. Cash orders, upcoming guests, and the details that matter.</p><div className="actions"><Link className="button" href="/app/orders">Manage orders ↗</Link><Link href="/app/reservations" className="text-link">Welcome your next guests →</Link></div></div><div className="welcome-image"><img src="/food/karahi.jpg" alt="Freshly prepared food"/><span>THE RESTAURANT WORKSPACE</span></div></section>}
     {report&&<form className="filter-bar" onSubmit={e=>{e.preventDefault();setRange({from,to});}}>
       <Field label="From · Karachi date"><input type="date" required value={from} max={to} onChange={e=>setFrom(e.target.value)}/></Field>
       <Field label="To · Karachi date"><input type="date" required min={from} value={to} onChange={e=>setTo(e.target.value)}/></Field>
       <button>Apply date range</button>
     </form>}
     {q.isPending?<Loading/>:q.isError?<Notice error>{q.error.message}<button onClick={()=>q.refetch()}>Retry report</button></Notice>:<>
-      <div className="stats-grid">{stats.map(([title,value,key])=><article className="stat-card" key={key}>
-        <span>{title}</span><strong>{value}</strong><small>{q.data.definitions[key]||"Backend-calculated metric."}</small>
+      <div className="stats-grid">{stats.map(([title,value,key],index)=><article className="stat-card" key={key}>
+        <div className="stat-top"><span>{title}</span><span className="stat-index">0{index+1}</span></div><strong>{value}</strong><small>{q.data.definitions[key]||"Backend-calculated metric."}</small>
       </article>)}</div>
+      {!report&&<div className="workspace-shortcuts"><Link href="/app/menu"><span>01</span><div><strong>Curate the menu</strong><small>Availability, prices &amp; the next favourite</small></div><b>↗</b></Link><Link href="/app/settings"><span>02</span><div><strong>Set the scene</strong><small>Restaurant details, imagery &amp; hours</small></div><b>↗</b></Link><Link href="/app/notifications"><span>03</span><div><strong>Check the outbox</strong><small>Real notification delivery states</small></div><b>↗</b></Link></div>}
       <div className="dashboard-grid">
         <section className="panel">
           <div className="row between"><h2>Recent orders</h2><Link href="/app/orders" className="text-link">View orders →</Link></div>
@@ -44,7 +46,7 @@ export function Reports({report=false}:{report?:boolean}){
           </table></div>:<Empty>No orders in this reporting period.</Empty>}
         </section>
         <section className="panel">
-          <h2>Top menu items</h2>
+          <div className="section-caption"><span className="eyebrow">From the kitchen</span><h2>Top menu items</h2></div>
           {q.data.top_items.length?q.data.top_items.map((i,n)=><div className="top-item" key={`${i.name}-${n}`}><span className="rank">{n+1}</span><div><strong>{i.name}</strong><small>{i.quantity} ordered</small></div><strong>{money(i.revenue)}</strong></div>):<Empty>No item sales to report.</Empty>}
         </section>
       </div>
