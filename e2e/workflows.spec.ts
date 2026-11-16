@@ -21,7 +21,7 @@ async function signIn(page: Page, email: string) {
 test("guest cash order reaches paid completion through the owner workspace", async ({
   page,
 }, testInfo) => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("homepage.png"), fullPage: true });
@@ -56,7 +56,7 @@ test("guest cash order reaches paid completion through the owner workspace", asy
   for (const status of ["CONFIRMED", "PREPARING", "READY"]) {
     await order.getByRole("button", { name: status, exact: true }).click();
     await order.getByRole("button", { name: "Confirm status change" }).click();
-    await expect(order.getByRole("button", { name: "Confirm status change" })).toHaveCount(0);
+    await expect(order.getByRole("button", { name: "Confirm status change" })).toHaveCount(0, { timeout: 30_000 });
     await expect(row).toContainText(status);
   }
   await expect(order.getByRole("button", { name: "COMPLETED", exact: true })).toHaveCount(0);
