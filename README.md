@@ -210,7 +210,7 @@ presented as satisfying those production acceptance items.
 
 ## Before commercial use
 
-This is a demonstration, not a production-readiness or legal-compliance claim.
+Release 1 implementation is not a production-readiness or legal-compliance claim.
 Confirm brand/trademark/domain availability, customer-facing policies, delivery
 areas, opening hours, tax rules, email sender approval, database recovery,
 monitoring, worker operation, capacity and provider limits before real customer
@@ -219,12 +219,14 @@ onboarding. Plan assignment is configuration only, not subscription billing.
 ## Client technical documentation
 
 The client handover is in
-`docs\ZAYQORA_Release1_Illustrated_Technical_Documentation_17_Nov_2026.docx`.
+`docs\ZAYQORA_Complete_Release1_Functional_and_Technical_Guide_17_Nov_2026_v2.docx`.
 It covers the implemented screens, architecture, technology stack, Pakistan/PKR
 pricing, cash-order and reservation flows, deployment and release limitations,
-with actual workflow screenshots and original architecture, role and order-flow
-diagrams. The editable source is
-`docs\ZAYQORA_Technical_Documentation_and_Flows.md`; screenshot assets and their
-sanitized capture manifest are alongside it. Passwords and private tracking
-links are intentionally excluded.
-The earlier dated Word report is retained as a historical snapshot.
+with 39 screenshots captured in an isolated test environment and three
+architecture, role and order-flow diagrams. These images do not represent live
+businesses or completed commercial transactions. The editable source is
+`docs\ZAYQORA_Release1_Client_Handover.md`; current screenshot assets and their
+sanitized capture manifest are in `docs\release1-client-guide-assets`.
+Passwords and private tracking links are intentionally excluded. The guide
+separates implemented functionality, outstanding operational launch conditions
+and later-release scope. Earlier reports are retained as historical snapshots.

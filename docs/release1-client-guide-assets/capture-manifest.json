@@ -1,0 +1,357 @@
+{
+  "captured_at": "2026-11-17T10:57:52.569Z",
+  "disclosure": "Controlled isolated test environment. Restaurant names, accounts, orders and bookings are synthetic; not live businesses or fulfilled transactions.",
+  "screenshots": [
+    {
+      "file": "01-platform-home.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "36-mobile-home.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "file": "39-private-restaurant-unavailable.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/r/saffron-table",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "02-plans.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/pricing",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "03-registration.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/register",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "04-sign-in.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/login",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "05-verification.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/verify-email",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "06-restaurant-home.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/r/saffron-table",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "07-menu.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/r/saffron-table/menu",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "08-customisation.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/r/saffron-table/menu",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "09-cart.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/r/saffron-table/cart",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "10-checkout.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/r/saffron-table/checkout",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "11-tracking.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/track/[private-token]",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "12-reservations.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/r/saffron-table/reservations",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "13-about.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/r/saffron-table/about",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "14-contact.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/r/saffron-table/contact",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "15-gallery.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/r/saffron-table/gallery",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "16-faqs.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/r/saffron-table/faqs",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "17-policies.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/r/saffron-table/policies",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "18-owner-dashboard.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/dashboard",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "19-setup.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/setup",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "20-website-builder.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/website",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "21-website-preview.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/website",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "22-owner-orders.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/orders",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "23-order-detail.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/orders",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "24-kitchen.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/kitchen",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "25-owner-menu.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/menu",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "26-menu-editor.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/menu",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "27-owner-reservations.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/reservations",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "28-tables.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/reservations",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "29-inquiries.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/inquiries",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "30-reports.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/reports",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "31-settings.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/settings",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "32-outbox.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/notifications",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "33-admin-overview.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/platform/overview",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "34-tenants.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/platform/tenants",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "35-plans-admin.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/platform/plans",
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      }
+    },
+    {
+      "file": "37-mobile-menu.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/r/saffron-table/menu",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "file": "38-mobile-owner.jpg",
+      "environment": "isolated contract fixtures",
+      "route": "/app/dashboard",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    }
+  ]
+}
