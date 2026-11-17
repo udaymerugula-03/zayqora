@@ -1,29 +1,31 @@
 import { expect, test } from "@playwright/test";
 
-const restaurantPath = "/api/v1/public/restaurants/saffron-table";
+const publicRestaurantSlug = process.env.E2E_PUBLIC_RESTAURANT_SLUG;
+const restaurantPath = `/api/v1/public/restaurants/${encodeURIComponent(publicRestaurantSlug ?? "unavailable-restaurant")}`;
 
 test.describe("Public restaurant contract", () => {
-  test("serves the published Pakistan demonstration restaurant", async ({ request }) => {
+  test("lists only public restaurants and hides private development restaurants", async ({ request }) => {
     const listing = await request.get("/api/v1/public/restaurants");
     expect(listing.ok()).toBeTruthy();
     expect(await listing.json()).toMatchObject({
-      items: expect.arrayContaining([
-        expect.objectContaining({ slug: "saffron-table", currency: "PKR" }),
-      ]),
+      items: expect.any(Array),
     });
-
-    const response = await request.get(restaurantPath);
-    expect(response.ok()).toBeTruthy();
-    expect(await response.json()).toMatchObject({
-      name: "Saffron Table",
-      currency: "PKR",
-      timezone: "Asia/Karachi",
-      published: true,
-      allow_pickup: true,
-    });
+    const { items } = await listing.json();
+    for (const restaurant of items) {
+      expect(restaurant).toMatchObject({
+        currency: "PKR",
+        published: true,
+        is_demo: false,
+      });
+    }
+    for (const slug of ["saffron-table", "garden-cafe"]) {
+      const response = await request.get(`/api/v1/public/restaurants/${slug}`);
+      expect(response.status()).toBe(404);
+    }
   });
 
   test("quotes menu selections using server prices", async ({ request }) => {
+    test.skip(!publicRestaurantSlug, "Public quote flows need an explicitly configured isolated test restaurant; private seed tenants must not be published.");
     const response = await request.get(`${restaurantPath}/menu`);
     expect(response.ok()).toBeTruthy();
     const menu = await response.json();
@@ -35,8 +37,8 @@ test.describe("Public restaurant contract", () => {
         candidate.available &&
         (!candidate.variant_required || candidate.variants.length > 0),
     );
-    expect(item, "The demonstration menu must include an orderable dish").toBeDefined();
-    if (!item) throw new Error("No orderable demonstration menu item");
+    expect(item, "The configured test menu must include an orderable dish").toBeDefined();
+    if (!item) throw new Error("No orderable test menu item");
     const variant = item.variant_required ? item.variants[0] : undefined;
     const quoteResponse = await request.post(`${restaurantPath}/quote`, {
       data: {
