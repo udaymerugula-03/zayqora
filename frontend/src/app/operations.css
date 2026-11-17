@@ -1,0 +1,7 @@
+.kitchen-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:18px;margin-block:20px}
+.kitchen-ticket{min-width:0;padding:20px;border:1px solid var(--line);border-radius:6px;background:var(--cream,#faf8f2)}
+.kitchen-ticket h3{margin:0;overflow-wrap:anywhere}
+.kitchen-ticket .notice{font-size:12px}
+.kitchen-ticket>.summary-item{align-items:flex-start}
+.verification-recovery{border-top:1px solid var(--line);margin-top:22px;padding-top:18px}
+.verification-recovery h2{font-size:23px}

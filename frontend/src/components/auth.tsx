@@ -9,6 +9,7 @@ import Link from "next/link";
 import {send} from "@/lib/api";
 import type {User} from "@/lib/types";
 import {Field,Notice,Loading} from "./ui";
+import "@/app/operations.css";
 export function AuthExperience({children}:{children:React.ReactNode}){
   return <div className="auth-experience"><aside className="auth-editorial"><img src="/food/hero.jpg" alt="A welcoming restaurant dining room"/><div><span className="eyebrow">The people behind the experience</span><h2>Great hospitality.<br/><em>Beautifully organised.</em></h2><p>Your menu, your guests, your next chapter.<br/>One considered space for it all.</p><span className="auth-editorial-footer">ZAYQORA · THE RESTAURANT WORKSPACE</span></div></aside><div className="auth-form-side">{children}<div className="auth-assurance"><span>Tab-scoped sessions</span><span>Owner &amp; platform access</span></div></div></div>;
 }
@@ -24,17 +25,45 @@ const registerSchema=loginSchema.extend({
   slug:z.string().min(3).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/,"Use lowercase letters, numbers and single hyphens.")
 });
 type AuthFields=z.infer<typeof registerSchema>;
+function VerificationRecovery({initialEmail="",expanded=false}:{initialEmail?:string;expanded?:boolean}){
+  const [open,setOpen]=useState(expanded);
+  const [email,setEmail]=useState(initialEmail);
+  const [busy,setBusy]=useState(false);
+  const [message,setMessage]=useState("");
+  const [error,setError]=useState("");
+  async function resend(event:React.FormEvent){
+    event.preventDefault();setBusy(true);setError("");setMessage("");
+    try {
+      const result=await send<{message:string;email_delivery_status:string}>("/auth/resend-verification",{email:email.trim()});
+      setMessage(`${result.message} Delivery status: ${result.email_delivery_status}.`);
+    }catch(error){setError(error instanceof Error?error.message:"Verification request failed. Please try again.");}
+    finally{setBusy(false);}
+  }
+  return <section className="verification-recovery">
+    {!open?<button type="button" className="text-button" onClick={()=>setOpen(true)}>Need a new verification link?</button>:<>
+      <h2>Request a verification link</h2>
+      <p className="fine">Use your registered email address. A new link replaces previous unused links. Delivery requires the platform email service.</p>
+      <form onSubmit={resend}>
+        <Field label="Account email for verification"><input type="email" autoComplete="email" required maxLength={254} value={email} onChange={event=>setEmail(event.target.value)}/></Field>
+        <button className="secondary full" disabled={busy}>{busy?"Requesting…":"Resend verification link"}</button>
+      </form>
+      {message&&<Notice>{message}</Notice>}{error&&<Notice error>{error}</Notice>}
+    </>}
+  </section>;
+}
 export function AuthForm({register:creating=false}:{register?:boolean}) {
   const router=useRouter();
   const client=useQueryClient();
   const [error,setError]=useState("");
   const [message,setMessage]=useState("");
+  const [registeredEmail,setRegisteredEmail]=useState("");
   const {register,handleSubmit,formState:{errors,isSubmitting}}=useForm<AuthFields>({resolver:zodResolver(creating?registerSchema:loginSchema) as never});
   async function submit(data:AuthFields){
     setError("");
     try {
       if(creating){
         const result=await send<{message:string;email_delivery_status:string}>("/auth/register",data);
+        setRegisteredEmail(data.email);
         setMessage(`${result.message} Email delivery: ${result.email_delivery_status}. If delivery is not configured, contact the platform administrator; no message is assumed sent.`);
       }else{
         const result=await send<{access_token:string;user:User}>("/auth/login",{email:data.email,password:data.password});
@@ -59,6 +88,7 @@ export function AuthForm({register:creating=false}:{register?:boolean}) {
       {error&&<Notice error>{error}</Notice>}
       <button disabled={isSubmitting} className="full">{isSubmitting?"Please wait…":creating?"Create restaurant account":"Sign in →"}</button>
     </form>}
+    <VerificationRecovery initialEmail={registeredEmail} expanded={creating&&!!message} key={registeredEmail}/>
     <p className="fine">{creating?<>Already have an account? <Link href="/login">Sign in</Link></>:<>New to ZAYQORA? <Link href="/register">Create your restaurant</Link></>}</p>
   </div>;
 }
@@ -81,5 +111,6 @@ export function VerifyEmail(){
       <button onClick={()=>q.refetch()}>Retry verification</button>
     </>:<Notice>{q.data.message}</Notice>}
     <Link href="/login" className="button secondary">Continue to sign in</Link>
+    {(!token||q.isError)&&<VerificationRecovery expanded/>}
   </div>;
 }

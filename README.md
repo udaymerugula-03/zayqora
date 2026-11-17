@@ -12,6 +12,14 @@ guest cart and cash checkout, private order tracking, reservations, a restaurant
 owner workspace, and basic platform administration. One ZAYQORA visual identity
 is used throughout the public and authenticated interfaces.
 
+Release alignment follows the supplied document's sections 20.2 and 22.1.
+The owner workspace includes a setup guide, configurable website content,
+contact enquiries and a basic owner-operated kitchen order board. The latter
+reuses the order lifecycle; it is not the Release 2 staff KDS or station router.
+Gallery and FAQ navigation are conditional on the owner's published content.
+Offers, coupons, review management and customer CRM are Release 2, not empty
+MVP tabs.
+
 The initial market is Pakistan, prices are in PKR, and restaurant schedules use
 Asia/Karachi time. Delivery and pickup are cash-only. Cash collection is an
 explicit owner action, not an automatic consequence of placing an order.
@@ -119,12 +127,25 @@ random passwords rather than embedding shared credentials in source.
 | Reservation requests | `/r/saffron-table/reservations` |
 | Owner dashboard | `/app/dashboard` |
 | Orders, menu, reservations | `/app/orders`, `/app/menu`, `/app/reservations` |
+| Owner setup and website builder | `/app/setup`, `/app/website` |
+| Basic kitchen board and contact enquiries | `/app/kitchen`, `/app/inquiries` |
 | Owner reports, settings, outbox | `/app/reports`, `/app/settings`, `/app/notifications` |
 | Platform administration | `/platform/overview`, `/platform/tenants`, `/platform/plans` |
 
 Private tracking links are returned after checkout; never publish them in
 documentation or analytics. For mail configuration, delivery-worker commands,
 PostgreSQL test schemas and operational details, see `backend\README.md`.
+
+Restaurant pages use `/r/[slug]`. Gallery (`/gallery`) and FAQs (`/faqs`) appear
+when enabled and populated; `/policies` exposes the configured cancellation
+information. The contact form saves an enquiry in the owner's inbox before
+acknowledging receipt. An acknowledgement does not mean an email was delivered
+or a booking/order was accepted.
+
+Saffron Table and Garden Cafe are seed data, not names mandated by the product
+specification. The read-only `is_demo` marker preserves truthful fictional-data
+notices without hardcoding one restaurant into product navigation. Keep this
+marker on the supplied fictional tenants.
 
 ## Development checks
 
@@ -162,6 +183,12 @@ approved SMTP credentials. A serverless HTTP deployment is not a continuous
 worker. Account verification and customer email delivery must not be described
 as working until a real sender and worker have been configured.
 
+The public health endpoint is a readiness baseline, not a configured monitoring
+and alerting service. Provider-managed database backups, an independently tested
+restore, external monitoring/alerts and separated staging/production resources
+still require operator configuration. The current demonstration must not be
+presented as satisfying those production acceptance items.
+
 ## Before commercial use
 
 This is a demonstration, not a production-readiness or legal-compliance claim.
@@ -173,10 +200,12 @@ onboarding. Plan assignment is configuration only, not subscription billing.
 ## Client technical documentation
 
 The client handover is in
-`docs\ZAYQORA_Technical_Documentation_With_Flow_Screenshots_16_Nov_2026.docx`.
+`docs\ZAYQORA_Release1_Illustrated_Technical_Documentation_17_Nov_2026.docx`.
 It covers the implemented screens, architecture, technology stack, Pakistan/PKR
 pricing, cash-order and reservation flows, deployment and release limitations,
-with 24 actual workflow screenshots. The editable source is
+with actual workflow screenshots and original architecture, role and order-flow
+diagrams. The editable source is
 `docs\ZAYQORA_Technical_Documentation_and_Flows.md`; screenshot assets and their
 sanitized capture manifest are alongside it. Passwords and private tracking
 links are intentionally excluded.
+The earlier dated Word report is retained as a historical snapshot.

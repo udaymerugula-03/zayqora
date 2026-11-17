@@ -3,6 +3,7 @@ import warnings
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from pathlib import Path
+from typing import Literal
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, File, Query, Request, UploadFile
@@ -16,7 +17,8 @@ from .security import fail, owner, rate, utc
 from .media import store_image
 from .services import (HOLDING, ORDER_TRANSITIONS, RESERVATION_TRANSITIONS, apply_patch,
                        audit, category_view, enforce_cap, money, normalize_options,
-                       order_view, page, publish_check, restaurant_lock, scoped, serialize)
+                       order_view, page, publish_check, restaurant_lock, scoped, serialize,
+                       queue_status_email)
 
 router = APIRouter(tags=["Owner"], dependencies=[Depends(owner)])
 
@@ -95,10 +97,30 @@ def update_item(item_id: str, data: s.ItemPatch, user=Depends(owner), db=Depends
 @router.get("/orders")
 def orders(page_number: int = Query(1, alias="page", ge=1),
            page_size: int = Query(20, ge=1, le=100), status: str = "", q: str = "",
+           fulfilment: Literal["pickup", "delivery"] | None = None,
+           payment_status: Literal["paid", "unpaid"] | None = None,
+           from_date: date | None = None, to_date: date | None = None,
+           active_only: bool = False,
            user=Depends(owner), db=Depends(get_db)):
     query = select(m.Order).where(m.Order.restaurant_id == user.restaurant_id)
     if status:
         query = query.where(m.Order.status == status)
+    if fulfilment:
+        query = query.where(m.Order.fulfilment == fulfilment)
+    if payment_status:
+        query = query.where(m.Order.payment_status == payment_status)
+    if from_date and to_date and from_date > to_date:
+        fail(422, "from_date must be on or before to_date.")
+    zone = ZoneInfo("Asia/Karachi")
+    if from_date:
+        query = query.where(m.Order.created_at >= utc(datetime.combine(from_date, time.min, zone)))
+    if to_date:
+        if to_date == date.max:
+            fail(422, "to_date exceeds the supported date range.")
+        query = query.where(m.Order.created_at < utc(datetime.combine(
+            to_date + timedelta(days=1), time.min, zone)))
+    if active_only:
+        query = query.where(m.Order.status.not_in(("COMPLETED", "REJECTED", "CANCELLED")))
     if q:
         term = "%" + q[:100].replace("%", r"\%").replace("_", r"\_") + "%"
         query = query.where(or_(m.Order.reference.ilike(term, escape="\\"),
@@ -113,7 +135,7 @@ def get_order(order_id: str, user=Depends(owner), db=Depends(get_db)):
 
 @router.patch("/orders/{order_id}/status")
 def order_status(order_id: str, data: s.StatusInput, user=Depends(owner), db=Depends(get_db)):
-    restaurant_lock(db, user.restaurant_id)
+    restaurant = restaurant_lock(db, user.restaurant_id)
     order = scoped(db, m.Order, order_id, user.restaurant_id, lock=True)
     if data.status not in ORDER_TRANSITIONS.get(order.status, set()):
         fail(409, f"Cannot move from {order.status} to {data.status}.")
@@ -136,13 +158,14 @@ def order_status(order_id: str, data: s.StatusInput, user=Depends(owner), db=Dep
                                       "reason": data.reason}]
     audit(db, user, "order.status", user.restaurant_id, data.reason,
           {"order_id": order.id, "from": previous, "to": data.status})
+    queue_status_email(db, restaurant, order, "order_status")
     db.commit()
     return order_view(order)
 
 
 @router.post("/orders/{order_id}/cash-payment")
 def cash_payment(order_id: str, user=Depends(owner), db=Depends(get_db)):
-    restaurant_lock(db, user.restaurant_id)
+    restaurant = restaurant_lock(db, user.restaurant_id)
     order = scoped(db, m.Order, order_id, user.restaurant_id, lock=True)
     if order.status in {"CANCELLED", "REJECTED"}:
         fail(409, "Cannot collect cash on cancelled or rejected orders.")
@@ -151,6 +174,7 @@ def cash_payment(order_id: str, user=Depends(owner), db=Depends(get_db)):
         audit(db, user, "order.cash_received", user.restaurant_id,
               "Owner explicitly recorded cash receipt.",
               {"order_id": order.id, "amount": money(order.total), "currency": order.currency})
+        queue_status_email(db, restaurant, order, "cash_receipt")
     db.commit()
     return order_view(order)
 
@@ -168,7 +192,7 @@ def reservations(page_number: int = Query(1, alias="page", ge=1),
 @router.patch("/reservations/{reservation_id}/status")
 def reservation_status(reservation_id: str, data: s.StatusInput,
                        user=Depends(owner), db=Depends(get_db)):
-    restaurant_lock(db, user.restaurant_id)
+    restaurant = restaurant_lock(db, user.restaurant_id)
     reservation = scoped(db, m.Reservation, reservation_id, user.restaurant_id, lock=True)
     if data.status not in RESERVATION_TRANSITIONS.get(reservation.status, set()):
         fail(409, f"Cannot move from {reservation.status} to {data.status}.")
@@ -179,8 +203,31 @@ def reservation_status(reservation_id: str, data: s.StatusInput,
     reservation.status = data.status
     audit(db, user, "reservation.status", user.restaurant_id, data.reason,
           {"reservation_id": reservation.id, "from": old, "to": data.status})
+    queue_status_email(db, restaurant, reservation, "reservation_status")
     db.commit()
     return serialize(reservation)
+
+
+@router.get("/inquiries")
+def inquiries(page_number: int = Query(1, alias="page", ge=1),
+              page_size: int = Query(20, ge=1, le=100),
+              user=Depends(owner), db=Depends(get_db)):
+    query = select(m.ContactInquiry).where(m.ContactInquiry.restaurant_id == user.restaurant_id)
+    return page(db, query.order_by(m.ContactInquiry.created_at.desc(), m.ContactInquiry.id),
+                page_number, page_size)
+
+
+@router.patch("/inquiries/{inquiry_id}")
+def inquiry_status(inquiry_id: str, data: s.InquiryStatus,
+                   user=Depends(owner), db=Depends(get_db)):
+    restaurant_lock(db, user.restaurant_id)
+    inquiry = scoped(db, m.ContactInquiry, inquiry_id, user.restaurant_id, lock=True)
+    previous = inquiry.status
+    inquiry.status = data.status
+    audit(db, user, "inquiry.status", user.restaurant_id,
+          details={"inquiry_id": inquiry.id, "from": previous, "to": data.status})
+    db.commit()
+    return serialize(inquiry)
 
 
 @router.get("/tables")

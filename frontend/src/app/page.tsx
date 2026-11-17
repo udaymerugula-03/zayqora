@@ -8,7 +8,7 @@ export default function Home() {
         <span className="eyebrow">The art of eating well · Pakistan</span>
         <h1>For the love<br/>of <em>good food.</em></h1>
         <p>Extraordinary flavours. Familiar faces. A table worth gathering around. Find your next restaurant moment with ZAYQORA.</p>
-        <div className="actions"><a href="#discover" className="button">Discover restaurants <span aria-hidden="true">↗</span></a><Link href="/r/saffron-table" className="text-link">Visit our demo restaurant →</Link></div>
+        <div className="actions"><a href="#discover" className="button">Discover restaurants <span aria-hidden="true">↗</span></a><Link href="/register" className="text-link">Create your restaurant website →</Link></div>
         <div className="hero-note"><span className="seal" aria-hidden="true">Z</span><p>A little local. A little personal.<br/><strong>Good food. Beautifully connected.</strong></p></div>
       </div>
       <div className="editorial-collage">
@@ -29,7 +29,7 @@ export default function Home() {
         <article><span>01</span><div><h3>Find your kind of place</h3><p>Browse real restaurant information and current menus.</p></div></article>
         <article><span>02</span><div><h3>Choose your moment</h3><p>Customise a cash order, or request an available table.</p></div></article>
         <article><span>03</span><div><h3>Leave room for enjoyment</h3><p>Review your server-confirmed total and follow restaurant updates.</p></div></article>
-      </div><Link href="/r/saffron-table/menu" className="text-link">Experience the demo menu →</Link></div>
+      </div><Link href="/#discover" className="text-link">Find your next restaurant →</Link></div>
     </section>
     <section className="container section"><div className="owner-banner">
       <div><span className="eyebrow">For the people behind the plates</span><h2>Hospitality is your craft.<br/><em>Connection is ours.</em></h2><p>A beautiful restaurant site. A considered owner workspace.<br/>Menus, cash orders and reservations, brought together.</p><Link className="button" href="/pricing">Explore restaurant plans ↗</Link></div>

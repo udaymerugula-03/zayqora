@@ -9,6 +9,7 @@ import {useQuery} from "@tanstack/react-query";
 import {ApiError,send} from "@/lib/api";
 import {cartInputs,money,quoteFingerprint,requestKey} from "@/lib/commerce";
 import type {Quote,Order} from "@/lib/types";
+import {canOrder,isDemo} from "@/lib/website";
 import {useCart} from "./storefront";
 import {Empty,Field,Loading,Notice,PageTitle} from "./ui";
 
@@ -99,6 +100,7 @@ export function CartCheckout({checkout=false}:{checkout?:boolean}){
       <p className="fine">Do not create a new order in another tab while the outcome is unknown. If you cannot resolve it, contact the restaurant.</p>
     </section>
   </main>;
+  if(!canOrder(r))return <main id="main" className="container section"><PageTitle title="Online ordering is unavailable."/><Notice>This restaurant is not currently accepting delivery or pickup orders. Your bag is kept on this device.</Notice><Link href={`/r/${r.slug}/contact`}>Contact the restaurant</Link></main>;
   if(!lines.length)return <main id="main" className="container section"><PageTitle title="A little room for something good."/><Empty>Your bag is empty. <Link href={`/r/${r.slug}/menu`}>Explore the menu →</Link></Empty></main>;
   return <main id="main" className="container section checkout-page">
     <nav className="checkout-progress" aria-label="Order progress"><Link href={`/r/${r.slug}/menu`}><span>01</span> The menu</Link><Link aria-current={!checkout?"step":undefined} href={`/r/${r.slug}/cart`}><span>02</span> Your bag</Link><span aria-current={checkout?"step":undefined}><span>03</span> Cash checkout</span></nav>
@@ -117,7 +119,7 @@ export function CartCheckout({checkout=false}:{checkout?:boolean}){
             <Field label="Order notes (optional)" error={errors.notes?.message}><textarea rows={2} placeholder="Anything the restaurant should know?" {...register("notes")}/></Field>
             <label className="choice consent"><input type="checkbox" {...register("consent")}/><span>I agree to the <Link href="/terms">terms</Link> and <Link href="/privacy">privacy notice</Link>, and consent to sharing my details with this restaurant for this order.</span></label>
             {errors.consent&&<p role="alert" className="field-error">{errors.consent.message}</p>}
-            {r.slug==="saffron-table"&&<Notice>Demonstration restaurant. This order will not result in real food delivery. Do not use sensitive personal details.</Notice>}
+            {isDemo(r)&&<Notice>Demonstration restaurant. This order will not result in real food delivery. Do not use sensitive personal details.</Notice>}
           </form>
         </>:<>
           <div className="form-section-heading"><span>YOUR SELECTION</span><h2>Freshly chosen</h2><p>A little of everything you&apos;re looking forward to.</p></div>

@@ -6,6 +6,10 @@ const category={id:"test-category",name:"Signature dishes",position:0,published:
 const plan={id:"test-plan",name:"Starter",description:"A clear set of restaurant entitlements.",max_menu_items:30,active:true};
 const page=items=>({items,total:items.length,page:1,page_size:20});
 const user={id:"test-owner",email:"owner@example.com",full_name:"Demo Owner",role:"owner",restaurant_id:restaurant.id,email_verified:true};
+const websiteDefaults={about_text:"",seo_title:"",seo_description:"",theme:"navy",typography:"editorial",reservations_enabled:true,gallery_enabled:false,faqs_enabled:false,gallery:[],faqs:[],cancellation_policy:"",homepage_sections:["featured","about","hours"]};
+restaurant.is_demo=true;restaurant.website_settings=structuredClone(websiteDefaults);
+const originalRestaurant=structuredClone(restaurant);
+const inquiries=new Map();
 const quote=body=>{const items=body.items.map(l=>{const unit=Number(item.price)+(l.variant_id==="large"?200:0)+(l.modifier_ids.includes("raita")?80:0);return {menu_item_id:item.id,name:item.name,quantity:l.quantity,variant_name:l.variant_id==="large"?"Large":"Regular",modifier_names:l.modifier_ids.includes("raita")?["Raita"]:[],unit_price:unit.toFixed(2),line_total:(unit*l.quantity).toFixed(2),notes:l.notes};});const subtotal=items.reduce((sum,i)=>sum+Number(i.line_total),0);const delivery=body.fulfilment==="delivery"?150:0;return {items,subtotal:subtotal.toFixed(2),delivery_fee:delivery.toFixed(2),tax:"0.00",total:(subtotal+delivery).toFixed(2),currency:"PKR",quote_token:`fixture-signed-quote-${item.price}`};};
 const orders=new Map();
 const dashboard={orders_today:0,gross_sales:"0.00",net_sales:"0.00",pending_orders:0,average_order_value:"0.00",upcoming_reservations:0,recent_orders:[],top_items:[],definitions:{gross_sales:"Completed and cash-paid orders only.",orders_today:"All orders created today within the selected period."}};
@@ -15,10 +19,11 @@ const server=createServer(async(req,res)=>{
   const body=raw?JSON.parse(raw):{};
   const respond=(data,status=200)=>{res.writeHead(status,{"Content-Type":"application/json"});res.end(JSON.stringify(data));};
   if(path==="/health")return respond({ok:true});
-  if(path==="/__test/reset"){item.price="600.00";orders.clear();return respond({ok:true});}
+  if(path==="/__test/reset"){item.price="600.00";orders.clear();inquiries.clear();Object.assign(restaurant,structuredClone(originalRestaurant));return respond({ok:true});}
+  if(path==="/__test/restaurant"){Object.assign(restaurant,body);return respond(restaurant);}
   if(path==="/__test/price"){item.price="650.00";return respond({ok:true});}
   if(path==="/public/restaurants")return respond(page([restaurant]));
-  if(path==="/public/restaurants/saffron-table")return respond(restaurant);
+  if(path==="/public/restaurants/saffron-table")return restaurant.published?respond(restaurant):respond({detail:"Restaurant not found."},404);
   if(path==="/public/restaurants/saffron-table/menu")return respond({categories:[category]});
   if(path==="/public/restaurants/saffron-table/quote")return respond(quote(body));
   if(path==="/public/restaurants/saffron-table/orders"){
@@ -36,7 +41,15 @@ const server=createServer(async(req,res)=>{
   if(path==="/auth/logout")return respond({message:"Session revoked."});
   if(path==="/auth/register")return respond({message:"Registration pending email verification. No email has been sent.",verification_required:true,email_delivery_status:"provider_not_configured"});
   if(path==="/auth/verify-email")return respond({message:"Email verified. You can now sign in."});
-  if(path==="/restaurant")return respond(restaurant);
+  if(path==="/restaurant"){if(req.method==="PATCH")Object.assign(restaurant,body);return respond(restaurant);}
+  if(path==="/public/restaurants/saffron-table/inquiries"){
+    if(!body.consent||!body.customer_name||!body.email||!body.subject||!body.message||body.message.length<10)return respond({detail:"Complete the required enquiry details and consent."},422);
+    const id=`inquiry-${inquiries.size+1}`;const reference=`ENQ-TEST-${inquiries.size+1}`;
+    inquiries.set(id,{...body,id,restaurant_id:restaurant.id,reference,status:"new",created_at:new Date().toISOString()});
+    return respond({reference,status:"received",notification_status:"provider_not_configured"},201);
+  }
+  if(path==="/inquiries"){const current=Number(url.searchParams.get("page")||1);const size=Number(url.searchParams.get("page_size")||20);const items=[...inquiries.values()];return respond({items:items.slice((current-1)*size,current*size),total:items.length,page:current,page_size:size});}
+  if(path.startsWith("/inquiries/")&&req.method==="PATCH"){const id=path.split("/").at(-1);const inquiry=inquiries.get(id);if(!inquiry)return respond({detail:"Enquiry not found."},404);if(!["new","read","resolved"].includes(body.status))return respond({detail:"Invalid enquiry status."},422);inquiry.status=body.status;return respond(inquiry);}
   if(path==="/menu/categories")return respond({items:[category]});
   if(path==="/orders"||path==="/reservations"||path==="/notifications")return respond(page([]));
   if(path==="/tables")return respond({items:[]});

@@ -1,3 +1,4 @@
 import {PublicReservations} from "@/components/reservations";
-export const metadata={title:"Reserve a table"};
+import {getRestaurant,restaurantMetadata} from "@/lib/restaurant";
+export async function generateMetadata({params}:{params:Promise<{slug:string}>}){const {slug}=await params;return restaurantMetadata(await getRestaurant(slug),"Reservations","/reservations");}
 export default function Reservations(){return <PublicReservations/>}

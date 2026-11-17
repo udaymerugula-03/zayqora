@@ -47,6 +47,65 @@ class Hours(Input):
         return self
 
 
+class GalleryImage(Input):
+    image_url: str = Field(min_length=1, max_length=2000)
+    alt: str = Field(min_length=1, max_length=200)
+
+    @field_validator("image_url")
+    @classmethod
+    def safe_image(cls, value):
+        if not value.startswith(("/food/", "/media/", "https://")):
+            raise ValueError("Use /food/, /media/, or HTTPS image URLs.")
+        return value
+
+
+class FAQ(Input):
+    question: str = Field(min_length=1, max_length=200)
+    answer: str = Field(min_length=1, max_length=3000)
+
+
+class WebsiteSettings(Input):
+    about_text: str = Field(default="", max_length=10000)
+    seo_title: str = Field(default="", max_length=160)
+    seo_description: str = Field(default="", max_length=320)
+    theme: Literal["navy", "emerald", "terracotta"] = "navy"
+    typography: Literal["editorial", "sans"] = "editorial"
+    reservations_enabled: bool = True
+    gallery_enabled: bool = False
+    faqs_enabled: bool = False
+    gallery: list[GalleryImage] = Field(default_factory=list, max_length=30)
+    faqs: list[FAQ] = Field(default_factory=list, max_length=30)
+    cancellation_policy: str = Field(default="", max_length=10000)
+    homepage_sections: list[Literal["featured", "about", "gallery", "hours"]] = Field(
+        default_factory=lambda: ["featured", "about", "hours"], max_length=4)
+
+    @field_validator("homepage_sections")
+    @classmethod
+    def unique_sections(cls, value):
+        if len(set(value)) != len(value):
+            raise ValueError("Homepage sections must be unique.")
+        return value
+
+
+class InquiryInput(Input):
+    customer_name: PersonName
+    email: EmailStr = Field(max_length=254)
+    subject: str = Field(min_length=1, max_length=160)
+    message: str = Field(min_length=10, max_length=5000)
+    consent: Literal[True]
+
+    @field_validator("subject")
+    @classmethod
+    def single_line_subject(cls, value):
+        if "\r" in value or "\n" in value:
+            raise ValueError("Subject must be a single line.")
+        return value
+
+
+class InquiryStatus(Input):
+    status: Literal["new", "read", "resolved"]
+
+
 class RestaurantPatch(Input):
     name: Name | None = None
     tagline: str | None = Field(default=None, max_length=250)
@@ -69,6 +128,7 @@ class RestaurantPatch(Input):
     reservation_duration_minutes: int | None = Field(default=None, ge=15, le=360)
     reservation_buffer_minutes: int | None = Field(default=None, ge=0, le=180)
     reservation_days_ahead: int | None = Field(default=None, ge=1, le=180)
+    website_settings: WebsiteSettings | None = None
 
     @field_validator("opening_hours")
     @classmethod

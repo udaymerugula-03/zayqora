@@ -25,6 +25,7 @@ export function Reports({report=false}:{report?:boolean}){
   return <>
     <PageTitle eyebrow={report?"Real numbers. Clear definitions.":"A fresh look at your restaurant"} title={report?"Your sales, in perspective.":`Hello, ${user.full_name.split(" ")[0]}.`}>
       <p>{report?"Choose a local date range. Only actual backend records are included; each metric retains the definition shown below.":"Orders, reservations and the details that need your attention."}</p>
+      {!report&&<Link href="/app/setup" className="text-link">Restaurant setup checklist</Link>}
     </PageTitle>
     {!report&&<section className="workspace-welcome"><div><span className="eyebrow">A little clarity for your day</span><h2>Behind every great meal,<br/><em>a well-considered service.</em></h2><p>Your live restaurant snapshot. Cash orders, upcoming guests, and the details that matter.</p><div className="actions"><Link className="button" href="/app/orders">Manage orders ↗</Link><Link href="/app/reservations" className="text-link">Welcome your next guests →</Link></div></div><div className="welcome-image"><img src="/food/karahi.jpg" alt="Freshly prepared food"/><span>THE RESTAURANT WORKSPACE</span></div></section>}
     {report&&<form className="filter-bar" onSubmit={e=>{e.preventDefault();setRange({from,to});}}>

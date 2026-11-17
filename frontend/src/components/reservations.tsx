@@ -5,6 +5,7 @@ import {useQuery} from "@tanstack/react-query";
 import {api,send} from "@/lib/api";
 import {dateTime,localDate} from "@/lib/commerce";
 import type {Reservation} from "@/lib/types";
+import {isDemo,websiteSettings} from "@/lib/website";
 import {useCart} from "./storefront";
 import {Empty,Field,Loading,Notice,PageTitle,Badge} from "./ui";
 export function PublicReservations(){
@@ -18,10 +19,10 @@ export function PublicReservations(){
   const q=useQuery({
     queryKey:["availability",r.slug,date,size],
     queryFn:()=>api<{slots:{starts_at:string;ends_at:string}[]}>(`/public/restaurants/${r.slug}/availability?date=${encodeURIComponent(date)}&party_size=${size}`),
-    enabled:!!date&&Number.isInteger(size)&&size>=1&&size<=30,retry:false
+    enabled:websiteSettings(r).reservations_enabled&&!!date&&Number.isInteger(size)&&size>=1&&size<=30,retry:false
   });
   async function submit(e:React.FormEvent<HTMLFormElement>){
-    e.preventDefault();if(busy)return;
+    e.preventDefault();if(busy||!websiteSettings(r).reservations_enabled)return;
     setBusy(true);setError("");
     const f=new FormData(e.currentTarget);
     try{
@@ -32,6 +33,7 @@ export function PublicReservations(){
     }catch(e){setError((e as Error).message);setSlot("");await q.refetch();}
     finally{setBusy(false);}
   }
+  if(!websiteSettings(r).reservations_enabled)return <main id="main" className="container section"><PageTitle title="Online reservations are unavailable."/><Notice>This restaurant is not currently accepting online table requests.</Notice><Link href={`/r/${r.slug}/contact`}>Contact the restaurant</Link></main>;
   const maxDate=new Date(`${localDate()}T12:00:00+05:00`);
   maxDate.setUTCDate(maxDate.getUTCDate()+r.reservation_days_ahead);
   return <main id="main" className="container section reservation-page">
@@ -69,7 +71,7 @@ export function PublicReservations(){
           </div>
           <Field label="Notes (optional)"><textarea name="notes" maxLength={1000} rows={2}/></Field>
           <label className="choice consent"><input required type="checkbox"/><span>I agree to the <Link href="/terms">terms</Link> and <Link href="/privacy">privacy notice</Link>, and sharing these details with the restaurant for this request.</span></label>
-          {r.slug==="saffron-table"&&<Notice>Demo restaurant. No real table or dining experience is provided.</Notice>}
+          {isDemo(r)&&<Notice>Demo restaurant. No real table or dining experience is provided.</Notice>}
           {error&&<Notice error>{error} If submission was interrupted, contact the restaurant before retrying to avoid duplicate requests.</Notice>}
           <button disabled={!slot||busy} className="full">{busy?"Submitting request…":"Request this table →"}</button>
         </form>

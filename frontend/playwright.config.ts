@@ -12,6 +12,6 @@ export default defineConfig({
   },
   webServer: [
     {command:"node browser/fixture-server.mjs",url:"http://127.0.0.1:18117/health",reuseExistingServer:false},
-    {command:"npm.cmd run start -- -p 3117",url:"http://127.0.0.1:3117",reuseExistingServer:false,env:{API_ORIGIN:"http://127.0.0.1:18117",NEXT_TELEMETRY_DISABLED:"1"}}
+    {command:"npm.cmd run start -- -p 3117",url:"http://127.0.0.1:3117",reuseExistingServer:false,env:{API_ORIGIN:"http://127.0.0.1:18117",PUBLIC_ORIGIN:"http://127.0.0.1:3117",NEXT_TELEMETRY_DISABLED:"1"}}
   ]
 });

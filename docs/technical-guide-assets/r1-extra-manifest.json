@@ -1,0 +1,80 @@
+{
+  "captured_at": "2026-11-17T08:26:53.104Z",
+  "source": "http://127.0.0.1:3000",
+  "configuration": "Saved example content only on the already-fictional Saffron Table tenant; existing nonempty owner text preserved.",
+  "inquiry_reference": "ENQ-2477E5FEC7",
+  "screenshots": [
+    {
+      "file": "25-setup-guide.jpg",
+      "route": "/app/setup",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "26-website-editor.jpg",
+      "route": "/app/website",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "27-website-preview.jpg",
+      "route": "/app/website",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "28-public-gallery.jpg",
+      "route": "/r/saffron-table/gallery",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "29-public-faqs.jpg",
+      "route": "/r/saffron-table/faqs",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "36-public-policies.jpg",
+      "route": "/r/saffron-table/policies",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "30-contact-form.jpg",
+      "route": "/r/saffron-table/contact",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "31-enquiry-received.jpg",
+      "route": "/r/saffron-table/contact",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "32-owner-enquiry.jpg",
+      "route": "/app/inquiries",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    }
+  ]
+}

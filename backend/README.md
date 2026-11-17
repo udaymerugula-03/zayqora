@@ -48,6 +48,18 @@ Without SMTP host/from, registration remains **pending/unverified**, explicitly 
 
 Additive recovery endpoint `POST /api/v1/auth/resend-verification` accepts `{email}`, invalidates previous verification links, and queues a fresh link without exposing tokens or account existence. It reports absent SMTP honestly; configure SMTP first if old links expired.
 
+Order and reservation creation queue a separate notice to the restaurant contact email, independently of whether the customer supplied an email. Valid owner status changes and the first explicit cash receipt queue customer notices when a customer email exists, in the same transaction. Invalid transitions and repeated cash recording do not queue duplicates. Notices contain references and truthful statuses, not internal reasons or private tracking tokens. The existing generic SMTP worker processes these kinds without additional configuration; a queued record is not proof of delivery.
+
+## Configurable website and enquiries
+
+Migration `0002_website_inquiries` adds restaurant `website_settings`, read-only `is_demo`, and the tenant-scoped contact inbox. Apply normal additive migrations before serving the new application; no seed/reset is required. Only known fictional slugs with an existing description containing “demonstration restaurant” are backfilled as demos; new fictional seeded restaurants set the flag explicitly.
+
+`PATCH /api/v1/restaurant` accepts `website_settings` as a validated **full replacement** with defaults, not a shallow merge. Restaurant responses expand missing settings to the complete defaults. Settings cover plain-text About/SEO/policy content, navy/emerald/terracotta themes, editorial/sans typography, optional gallery/FAQs, homepage section order and new-reservation availability. Gallery URLs accept HTTPS or bundled `/food/`/uploaded `/media/` paths. Gallery/FAQ navigation should appear only when enabled and nonempty. Setting `reservations_enabled` false blocks public availability and new reservations with `409 service_disabled`; existing capacity holds and owner status changes remain valid.
+
+`POST /api/v1/public/restaurants/{slug}/inquiries` validates contact name, email, subject, message and explicit consent, persists only for active published tenants, and queues an owner notice when the restaurant has an email. Its `201` response contains only `reference`, `status: received`, and honest `notification_status: queued|provider_not_configured`. Owner `GET /api/v1/inquiries` is paginated; `PATCH /api/v1/inquiries/{id}` accepts `new|read|resolved`, is tenant-scoped, and audits each change.
+
+Owner `GET /api/v1/orders` retains status/search/pagination and adds optional `fulfilment=pickup|delivery`, `payment_status=paid|unpaid`, inclusive Karachi `from_date`/`to_date`, and `active_only=true`. Dates use a half-open timestamp interval; reversed dates are rejected. Active orders exclude completed, rejected and cancelled states.
+
 Settings explicitly read root `C:\Users\venkatasaiutm\Zayqora\.env` (resolved relative to the application source, not the current working directory), plus process environment overrides. The parent/operator owns this file; application and seed never overwrite it.
 
 For PostgreSQL `sslmode=verify-full`, the engine uses the maintained Certifi CA bundle if no explicit `sslrootcert` URL parameter or `PGSSLROOTCERT` environment setting exists. This supports bundled libpq on Windows while preserving certificate-chain and hostname verification. Private-CA providers must supply their trusted root certificate explicitly; TLS is never silently downgraded.

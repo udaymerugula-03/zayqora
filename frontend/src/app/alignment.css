@@ -1,0 +1,95 @@
+.restaurant-template.theme-navy{--navy:#142d37;--teal:#234957;--teal-dark:#142d37;--soft:#ecf0ee}
+.restaurant-template.theme-emerald{--navy:#133b30;--teal:#176553;--teal-dark:#104e40;--soft:#eaf1e9}
+.restaurant-template.theme-terracotta{--navy:#57362c;--teal:#a04f38;--teal-dark:#7c3927;--soft:#f4e9e1;--gold:#a85c3f}
+.restaurant-template.typography-sans{--serif:"DM Sans",Arial,sans-serif}
+.restaurant-template{color:var(--ink);background:var(--cream)}
+.restaurant-template h1,.restaurant-template h2,.restaurant-template h3{color:var(--navy)}
+.restaurant-template .restaurant-bar-inner{flex-wrap:wrap;row-gap:14px}
+.restaurant-template .restaurant-bar nav{flex-wrap:wrap;gap:12px 20px}
+.restaurant-template .restaurant-bar nav a[aria-current=page]{color:var(--teal);text-decoration:underline;text-underline-offset:7px}
+.restaurant-legal{display:flex;flex-wrap:wrap;justify-content:space-between;gap:15px;padding-top:24px;padding-bottom:24px;border-top:1px solid var(--line);font-size:13px}
+.preserve-lines{white-space:pre-wrap;overflow-wrap:anywhere}
+.restaurant-about-copy{max-width:850px;line-height:1.9}
+.restaurant-editorial-images .image-disclaimer{position:absolute;bottom:15px;left:15px;background:var(--cream);padding:4px 10px}
+.restaurant-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.restaurant-gallery figure{margin:0;min-width:0}
+.restaurant-gallery img{width:100%;height:280px;object-fit:cover;border-radius:var(--radius)}
+.restaurant-gallery figcaption{font-size:13px;color:var(--muted);padding:10px 0;overflow-wrap:anywhere}
+.restaurant-hours-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px}
+.published-menu-feature{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.published-menu-feature>img{width:100%;height:260px;object-fit:cover}
+.published-menu-feature>div{padding:24px}
+.published-menu-feature h3{font-size:28px;margin:0 0 10px}
+.published-menu-feature p{font-size:14px;line-height:1.7}
+.restaurant-faq summary{font-weight:600;cursor:pointer;line-height:1.6}
+.restaurant-faq p{line-height:1.8}
+.contact-enquiry{margin-top:24px}
+.contact-enquiry form{display:grid;gap:16px}
+.contact-enquiry .choice{align-items:flex-start}
+.website-editor{display:grid;gap:24px;min-width:0}
+.website-settings-form{display:grid;gap:18px}
+.website-settings-form>fieldset{border:0;padding:0;margin:0;display:grid;gap:22px;min-width:0}
+.website-settings-form .panel{min-width:0}
+.website-entry{padding:20px;margin:20px 0;border:1px solid var(--line);border-radius:var(--radius);background:var(--cream);display:grid;gap:14px}
+.website-entry .upload-preview{max-width:300px}
+.homepage-section-list{display:grid;gap:16px;margin-top:20px}
+.homepage-section-list>.row{padding-bottom:12px;border-bottom:1px solid var(--line)}
+.website-preview-panel{min-width:0}
+.website-preview-panel>.row{margin-bottom:20px}
+.website-preview-panel>.row>div:first-child{max-width:680px}
+.website-preview-scroll{overflow:auto;max-height:900px;padding:12px;background:#e8e8e2;border-radius:8px}
+.website-preview{container-type:inline-size;container-name:restaurant-preview;box-shadow:0 4px 20px #142d371c;margin:0 auto}
+.website-preview[data-device=desktop]{width:1080px}
+.website-preview[data-device=tablet]{width:768px}
+.website-preview[data-device=mobile]{width:390px}
+.preview-restaurant-bar{padding:20px 28px;background:var(--white);border-bottom:1px solid var(--line);color:var(--navy)}
+.preview-restaurant-bar>strong{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-size:26px}
+.preview-restaurant-bar img{width:40px;height:40px;object-fit:contain}
+.preview-restaurant-bar>div{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12px}
+.website-preview .container{width:calc(100% - 56px);max-width:1200px;margin-left:auto;margin-right:auto}
+.website-preview .restaurant-editorial{display:grid;grid-template-columns:1fr 1fr;gap:30px;padding:48px 0}
+.website-preview .restaurant-editorial .preview-hero-heading{font-size:64px;line-height:1;letter-spacing:-.03em}
+.website-preview .restaurant-editorial-images{height:430px;min-height:0}
+.website-preview .restaurant-interior{height:100%;width:100%;object-fit:cover}
+.website-preview .section{padding-top:36px;padding-bottom:36px}
+.website-preview h2{font-size:40px}
+.website-preview .food-editorial{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.website-preview .food-editorial img{height:180px}
+.website-preview .published-menu-feature>div{padding:14px}
+.website-preview .restaurant-gallery img{height:180px}
+.website-preview .notice{font-size:12px;margin:0;padding:14px}
+.website-preview .restaurant-hours-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+@container restaurant-preview (max-width:800px){
+  .website-preview .restaurant-editorial{grid-template-columns:1fr;gap:24px}
+  .website-preview .restaurant-editorial-images{height:330px}
+  .website-preview .restaurant-editorial .preview-hero-heading{font-size:54px}
+  .website-preview .restaurant-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@container restaurant-preview (max-width:450px){
+  .website-preview .container{width:calc(100% - 36px)}
+  .website-preview .restaurant-editorial .preview-hero-heading{font-size:44px}
+  .website-preview .restaurant-editorial-images{height:280px}
+  .website-preview .food-editorial,.website-preview .restaurant-gallery,.website-preview .restaurant-hours-grid{grid-template-columns:1fr}
+  .website-preview .section-heading{display:block}
+  .website-preview h2{font-size:34px}
+  .website-preview .food-editorial img,.website-preview .restaurant-gallery img{height:220px}
+}
+.setup-progress{width:100%;height:10px;accent-color:var(--teal)}
+.setup-checklist{list-style:none;padding:0;display:grid;gap:16px;margin:24px 0}
+.setup-checklist>li{display:flex;gap:22px;align-items:flex-start}
+.setup-step{flex-shrink:0;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);color:var(--muted)}
+.setup-step.complete{background:var(--teal);border-color:var(--teal);color:white}
+.setup-checklist h2{margin-top:0}
+.enquiry-message{background:var(--cream);border:1px solid var(--line);padding:20px;border-radius:8px;max-height:380px;overflow:auto}
+@media(max-width:760px){
+  .restaurant-gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .restaurant-gallery img{height:220px}
+  .restaurant-hours-grid{grid-template-columns:1fr;gap:30px}
+  .restaurant-template .restaurant-bar nav{overflow-x:auto;flex-wrap:nowrap;max-width:100%;padding-bottom:10px}
+  .restaurant-template .restaurant-bar nav a{white-space:nowrap}
+  .setup-checklist>li{gap:14px}
+}
+@media(max-width:480px){
+  .restaurant-gallery{grid-template-columns:1fr}
+  .website-entry{padding:14px}
+}

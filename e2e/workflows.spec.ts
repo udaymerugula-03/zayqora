@@ -96,7 +96,7 @@ test("live workspace pages retain branding and load their actual API data", asyn
 }, testInfo) => {
   test.setTimeout(120_000);
   await signIn(page, "owner@zayqora.demo");
-  for (const path of ["menu", "orders", "reservations", "settings", "notifications"]) {
+  for (const path of ["setup", "menu", "orders", "kitchen", "reservations", "inquiries", "website", "settings", "notifications"]) {
     await page.goto(`/app/${path}`);
     await expect(page.locator("main h1")).toHaveCount(1);
     await expect(page.locator("main").getByRole("alert")).toHaveCount(0);

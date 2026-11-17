@@ -5,6 +5,7 @@ import {useQuery} from "@tanstack/react-query";
 import {api} from "@/lib/api";
 import {money} from "@/lib/commerce";
 import type {Category,MenuItem,LocalLine} from "@/lib/types";
+import {canOrder,isDemo} from "@/lib/website";
 import {Dialog,Field,Loading,Notice,Empty,PageTitle} from "./ui";
 import {useCart} from "./storefront";
 
@@ -22,6 +23,8 @@ export function PublicMenu(){
       <label className="search-field"><span className="sr-only">Search menu</span><span aria-hidden="true">⌕</span><input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="What are you craving?"/></label>
       <Link className="button secondary" href={`/r/${restaurant.slug}/cart`}>View bag · {lines.reduce((s,l)=>s+l.quantity,0)}</Link>
     </div>
+    {isDemo(restaurant)&&<Notice>Demonstration menu. Orders do not provide real food or delivery.</Notice>}
+    {!canOrder(restaurant)&&<Notice>Online ordering is currently unavailable. You can still browse the published menu.</Notice>}
     {added&&<Notice>{added} added to your bag. <Link href={`/r/${restaurant.slug}/cart`}>Review your bag →</Link></Notice>}
     {lines.length>=50&&<Notice>The bag supports up to 50 item selections. Review your bag before adding another.</Notice>}
     {q.isPending?<Loading/>:q.isError?<Notice error>{q.error.message}<button onClick={()=>q.refetch()}>Retry menu</button></Notice>:<div className="menu-catalogue">
@@ -39,7 +42,7 @@ export function PublicMenu(){
             <div className="card-body">
               <div className="row between"><h3>{i.name}</h3>{!i.available&&<span className="badge">Sold out</span>}</div>
               <p>{i.description}</p>
-              <div className="row between"><strong>{money(i.price)}{i.variants.length>0&&<small> base</small>}</strong><button className="small" disabled={!i.available||lines.length>=50} onClick={()=>setItem(i)}>Customise +</button></div>
+              <div className="row between"><strong>{money(i.price)}{i.variants.length>0&&<small> base</small>}</strong><button className="small" disabled={!canOrder(restaurant)||!i.available||lines.length>=50} onClick={()=>setItem(i)}>Customise +</button></div>
             </div>
           </article>)}</div>
         </section>:null;

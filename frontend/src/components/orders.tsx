@@ -6,20 +6,36 @@ import {dateTime,money,orderTransitions,availableOrderActions} from "@/lib/comme
 import type {Order,Page} from "@/lib/types";
 import {Badge,Dialog,Empty,Field,Loading,Notice,PageTitle} from "./ui";
 import {useAction,ActionMessages} from "./workspace";
+import "@/app/operations.css";
 export function Pagination({page,total,size,onChange}:{page:number;total:number;size:number;onChange:(page:number)=>void}){return <div className="pagination"><span>{total} record(s) · Page {page} of {Math.max(1,Math.ceil(total/size))}</span><div><button className="secondary small" disabled={page<=1} onClick={()=>onChange(page-1)}>Previous</button><button className="secondary small" disabled={page*size>=total} onClick={()=>onChange(page+1)}>Next</button></div></div>}
-export function Orders(){
+export function Orders({board=false}:{board?:boolean}){
  const [page,setPage]=useState(1);const [status,setStatus]=useState("");const [search,setSearch]=useState("");const [query,setQuery]=useState("");const [selected,setSelected]=useState("");
- const q=useQuery({queryKey:["orders",page,status,query],queryFn:()=>api<Page<Order>>(`/orders?page=${page}&page_size=20&status=${status}&q=${encodeURIComponent(query)}`),refetchInterval:20_000});
+ const [filters,setFilters]=useState({fulfilment:"",payment_status:"",from_date:"",to_date:""});
+ const parameters=new URLSearchParams(Object.entries({page:String(page),page_size:"20",status,q:query,...filters,...(board?{active_only:"true"}:{})}).filter(([,value])=>value!==""));
+ const q=useQuery({queryKey:["orders",board,page,status,query,filters],queryFn:()=>api<Page<Order>>(`/orders?${parameters}`),refetchInterval:board?10_000:20_000});
+ function filter(name:keyof typeof filters,value:string){setFilters(current=>({...current,[name]:value}));setPage(1);}
+ const quickFilters=board?[["","All active"],["PENDING","Incoming"],["CONFIRMED","Accepted"],["PREPARING","Preparing"],["READY","Ready to go"],["OUT_FOR_DELIVERY","Dispatched"]]:[["","All orders"],["PENDING","Needs a response"],["PREPARING","In the kitchen"],["READY","Ready to go"],["COMPLETED","Completed"]];
  return <>
-   <PageTitle eyebrow="Owner-operated order board" title="Every order. A little more organised."><p>Manage your restaurant&apos;s orders and explicitly record cash receipt. This is not a staff KDS or live delivery tracker.</p></PageTitle>
-   <div className="order-status-filters" role="group" aria-label="Quick order filters">{[["","All orders"],["PENDING","Needs a response"],["PREPARING","In the kitchen"],["READY","Ready to go"],["COMPLETED","Completed"]].map(([value,label])=><button key={value} className={status===value?"selected":""} aria-pressed={status===value} onClick={()=>{setStatus(value);setPage(1);}}>{label}</button>)}</div>
+   <PageTitle eyebrow={board?"Release 1 · Owner-operated kitchen view":"Owner-operated order board"} title={board?"Kitchen order board":"Every order. A little more organised."}><p>{board?"Active orders with item instructions and preparation status. Open a ticket to make an authorized status change. Refreshes every 10 seconds; staff station routing belongs to Release 2.":"Manage your restaurant's orders and explicitly record cash receipt. This is not a staff KDS or live delivery tracker."}</p></PageTitle>
+   <div className="order-status-filters" role="group" aria-label="Quick order filters">{quickFilters.map(([value,label])=><button key={value} className={status===value?"selected":""} aria-pressed={status===value} onClick={()=>{setStatus(value);setPage(1);}}>{label}</button>)}</div>
    <form className="filter-bar" onSubmit={e=>{e.preventDefault();setQuery(search);setPage(1);}}>
      <Field label="Search reference or customer"><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search orders…"/></Field>
-     <Field label="Status"><select value={status} onChange={e=>{setStatus(e.target.value);setPage(1);}}><option value="">All statuses</option>{Object.keys(orderTransitions).map(s=><option key={s}>{s}</option>)}</select></Field><button>Search</button>
+     <Field label="Status"><select value={status} onChange={e=>{setStatus(e.target.value);setPage(1);}}><option value="">All statuses</option>{Object.keys(orderTransitions).filter(state=>!board||!["COMPLETED","REJECTED","CANCELLED"].includes(state)).map(s=><option key={s}>{s}</option>)}</select></Field>
+     <Field label="Fulfilment"><select value={filters.fulfilment} onChange={e=>filter("fulfilment",e.target.value)}><option value="">All fulfilment</option><option value="pickup">Pickup</option><option value="delivery">Delivery</option></select></Field>
+     <Field label="Payment status"><select value={filters.payment_status} onChange={e=>filter("payment_status",e.target.value)}><option value="">All payments</option><option value="paid">Paid</option><option value="unpaid">Unpaid</option></select></Field>
+     <Field label="From · Karachi date"><input type="date" value={filters.from_date} max={filters.to_date||undefined} onChange={e=>filter("from_date",e.target.value)}/></Field>
+     <Field label="To · Karachi date"><input type="date" value={filters.to_date} min={filters.from_date||undefined} onChange={e=>filter("to_date",e.target.value)}/></Field>
+     <button>Search</button>{board&&<button type="button" className="secondary" disabled={q.isFetching} onClick={()=>q.refetch()}>Refresh board</button>}
    </form>
    {q.isPending?<Loading/>:q.isError?<Notice error>{q.error.message}<button onClick={()=>q.refetch()}>Retry orders</button></Notice>:<section className="panel">
      <div className="orders-table-heading"><div><span className="eyebrow">The service ledger</span><h2>{status?status.replaceAll("_"," ").toLowerCase()+" orders":"All restaurant orders"}</h2></div><span>{q.data.total} matching record(s)</span></div>
-     {q.data.items.length?<div className="table-scroll"><table><thead><tr><th>Order</th><th>Customer</th><th>Status</th><th>Cash</th><th>Total · PKR</th><th>Created</th><th>Details</th></tr></thead><tbody>{q.data.items.map(o=><tr key={o.id}><td><strong>{o.reference}</strong><small>{o.fulfilment}</small></td><td>{o.customer_name}</td><td><Badge>{o.status}</Badge></td><td><Badge>{o.payment_status}</Badge></td><td>{money(o.total)}</td><td>{dateTime(o.created_at)}</td><td><button className="secondary small" onClick={()=>setSelected(o.id)}>Open order</button></td></tr>)}</tbody></table></div>:<Empty>No orders match these filters.</Empty>}
+     {q.data.items.length?(board?<div className="kitchen-board">{q.data.items.map(order=><article className="kitchen-ticket" key={order.id}>
+       <div className="row between"><h3>{order.reference}</h3><Badge>{order.status}</Badge></div>
+       <p className="fine">{order.fulfilment} · Received {dateTime(order.created_at)}</p>
+       {order.items.map((item,index)=><div className="summary-item" key={index}><div><strong>{item.quantity} × {item.name}</strong><small>{[item.variant_name,...item.modifier_names].filter(Boolean).join(" · ")}</small>{item.notes&&<Notice>Item instructions: {item.notes}</Notice>}</div></div>)}
+       {order.notes&&<Notice>Order instructions: {order.notes}</Notice>}
+       <button className="secondary small" onClick={()=>setSelected(order.id)}>Open order</button>
+     </article>)}</div>:<div className="table-scroll"><table><thead><tr><th>Order</th><th>Customer</th><th>Status</th><th>Cash</th><th>Total · PKR</th><th>Created</th><th>Details</th></tr></thead><tbody>{q.data.items.map(o=><tr key={o.id}><td><strong>{o.reference}</strong><small>{o.fulfilment}</small></td><td>{o.customer_name}</td><td><Badge>{o.status}</Badge></td><td><Badge>{o.payment_status}</Badge></td><td>{money(o.total)}</td><td>{dateTime(o.created_at)}</td><td><button className="secondary small" onClick={()=>setSelected(o.id)}>Open order</button></td></tr>)}</tbody></table></div>):<Empty>No orders match these filters.</Empty>}
      <Pagination page={page} total={q.data.total} size={20} onChange={setPage}/>
    </section>}
    <p className="operations-footnote">Cash receipt must be recorded before completion. Changes are checked by the server; rejected or cancelled orders require a reason.</p>

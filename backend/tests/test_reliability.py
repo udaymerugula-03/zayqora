@@ -127,6 +127,14 @@ def test_item_revenue_allocates_included_tax_without_losing_rounding_pennies(api
 
 def test_smtp_worker_marks_sent_only_on_real_provider_acceptance(api, monkeypatch):
     client, factory, password = api
+    with factory() as db:
+        tenant = db.scalar(select(m.Restaurant).where(m.Restaurant.slug == "saffron-table"))
+        malformed = m.Outbox(restaurant_id=tenant.id, kind="contact_inquiry",
+                             recipient="owner0@example.com", subject="Invalid\nsubject",
+                             body="Retained for investigation.", created_at=m.now()-timedelta(minutes=1))
+        db.add(malformed)
+        db.commit()
+        malformed_id = malformed.id
     create_order(client)
     config = client.app.state.config
     config.smtp_host = "smtp.example.com"
@@ -150,10 +158,15 @@ def test_smtp_worker_marks_sent_only_on_real_provider_acceptance(api, monkeypatc
             sent_messages.append(message)
 
     monkeypatch.setattr(smtplib, "SMTP", AcceptedSMTP)
-    assert deliver_batch(factory, config) == 1
-    assert len(sent_messages) == 1
+    assert deliver_batch(factory, config) == 2
+    assert len(sent_messages) == 2
+    assert {message["To"] for message in sent_messages} == {
+        "guest@example.com", "owner0@example.com"}
     with factory() as db:
-        outbox = db.scalar(select(m.Outbox))
+        malformed = db.get(m.Outbox, malformed_id)
+        assert malformed.status == "failed" and malformed.attempts == 1
+        assert malformed.body == "Retained for investigation."
+        outbox = db.scalar(select(m.Outbox).where(m.Outbox.status == "sent"))
         assert outbox.status == "sent" and outbox.body == "[delivered]"
     create_order(client, key="mail-failure-key")
 

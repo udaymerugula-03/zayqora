@@ -1,15 +1,9 @@
-import Link from "next/link";
-import {getRestaurant} from "@/lib/restaurant";
-import {money} from "@/lib/commerce";
-export default async function RestaurantHome({params}:{params:Promise<{slug:string}>}){
-  const {slug}=await params;const r=await getRestaurant(slug);const base=`/r/${slug}`;
-  return <main id="main">
-    <section className="restaurant-editorial container">
-      <div className="restaurant-introduction"><span className="eyebrow">{r.cuisine} · {r.city}{slug==="saffron-table"?" · Demonstration":""}</span><h1>{r.name}</h1><p className="restaurant-tagline">{r.tagline||"A little taste of togetherness."}</p><p>{r.description}</p><div className="actions"><Link className="button" href={`${base}/menu`}>Explore the menu ↗</Link><Link className="text-link" href={`${base}/reservations`}>Reserve a table →</Link></div><div className="restaurant-service-note"><span aria-hidden="true">✦</span><span>{[r.allow_pickup&&"Pickup",r.allow_delivery&&"Delivery"].filter(Boolean).join(" & ")||"Ordering unavailable"} · Cash only · Prices in PKR</span></div></div>
-      <div className="restaurant-editorial-images"><img className="restaurant-interior" src={r.hero_image_url||"/food/hero.jpg"} alt={`The restaurant setting at ${r.name}`}/><div className="restaurant-food-inset"><img src="/food/biryani.jpg" alt="Fragrant biryani prepared for sharing"/><span>A taste of the occasion.</span></div><span className="vertical-caption">GOOD FOOD. BEAUTIFULLY CONNECTED.</span></div>
-    </section>
-    <div className="container restaurant-info-strip"><div><small>Find our table</small><strong>{r.city}</strong></div><div><small>Make it your moment</small><strong>{[r.allow_pickup&&"Pickup",r.allow_delivery&&"Delivery"].filter(Boolean).join(" & ")||"Ordering unavailable"}</strong></div><div><small>Minimum order</small><strong>{money(r.minimum_order)}</strong></div><Link href={`${base}/contact`}>Opening hours &amp; contact ↗</Link></div>
-    <section className="container section"><div className="section-heading"><div><span className="eyebrow">The pleasure is in the details</span><h2>Full of flavour.<br/><em>Made for your table.</em></h2></div><p>Explore the restaurant&apos;s live menu.<br/>Current prices and availability are checked at checkout.</p></div><div className="food-editorial"><Link href={`${base}/menu`}><img src="/food/biryani.jpg" alt="Fragrant biryani with warming spices"/><span><small>A familiar favourite</small>For the love of flavour <b>↗</b></span></Link><Link href={`${base}/menu`}><img src="/food/karahi.jpg" alt="Rich chicken curry with fresh herbs"/><span><small>Better together</small>Something to share <b>↗</b></span></Link><Link href={`${base}/menu`}><img src="/food/dessert.jpg" alt="A sweet finish to a good meal"/><span><small>The finishing touch</small>A little sweetness <b>↗</b></span></Link></div></section>
-    <section className="container reservation-callout"><span className="eyebrow">A seat. A conversation. A memory.</span><h2>Good company deserves<br/><em>a table of its own.</em></h2><p>Check available slots and request a table. All times Asia/Karachi.</p><Link className="button" href={`${base}/reservations`}>Find a table ↗</Link><span className="fine">Requests are reviewed by the restaurant. Demo reservations do not provide real dining.</span></section>
-  </main>;
+import {RestaurantHomeContent} from "@/components/restaurant-content";
+import {getPublicMenu, getRestaurant, restaurantMetadata} from "@/lib/restaurant";
+export async function generateMetadata({params}:{params:Promise<{slug:string}>}) {
+  const {slug}=await params; return restaurantMetadata(await getRestaurant(slug),"Home");
+}
+export default async function RestaurantHome({params}:{params:Promise<{slug:string}>}) {
+  const {slug}=await params;const r=await getRestaurant(slug);const menu=await getPublicMenu(slug);
+  return <main id="main"><RestaurantHomeContent restaurant={r} categories={menu.categories}/></main>;
 }

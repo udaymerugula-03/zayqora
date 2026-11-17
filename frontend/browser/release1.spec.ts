@@ -16,6 +16,31 @@ async function fillCheckout(page:Page){
   await page.getByRole("checkbox",{name:/I confirm this current total/}).check();
 }
 test.beforeEach(async({request})=>{await request.post("http://127.0.0.1:18117/__test/reset");});
+test("verification recovery submits the account email and reports actual delivery state",async({page})=>{
+  await page.route("**/api/v1/auth/resend-verification",async route=>{
+    expect(route.request().postDataJSON()).toEqual({email:"owner@example.com"});
+    await route.fulfill({json:{message:"If an unverified account exists, a fresh verification link was queued. SMTP is not configured; no email has been sent.",email_delivery_status:"provider_not_configured"}});
+  });
+  await page.goto("/verify-email");
+  await page.getByLabel("Account email for verification").fill("owner@example.com");
+  await page.getByRole("button",{name:"Resend verification link"}).click();
+  await expect(page.getByText(/Delivery status: provider_not_configured/)).toBeVisible();
+  await page.goto("/login");
+  await page.getByRole("button",{name:"Need a new verification link?"}).click();
+  await expect(page.getByLabel("Account email for verification")).toBeVisible();
+});
+test("owner kitchen board requests active orders and applies fulfilment filters",async({page})=>{
+  await page.addInitScript(()=>sessionStorage.setItem("zayqora-token","test-owner"));
+  const initial=page.waitForRequest(request=>new URL(request.url()).pathname==="/api/v1/orders");
+  await page.goto("/app/kitchen");
+  expect(new URL((await initial).url()).searchParams.get("active_only")).toBe("true");
+  await expect(page.getByRole("heading",{level:1,name:"Kitchen order board"})).toBeVisible();
+  const filtered=page.waitForRequest(request=>new URL(request.url()).searchParams.get("fulfilment")==="delivery");
+  await page.getByRole("combobox",{name:"Fulfilment",exact:true}).selectOption("delivery");
+  await filtered;
+  await expect(page.getByRole("combobox",{name:"Status",exact:true}).getByRole("option",{name:"COMPLETED",exact:true})).toHaveCount(0);
+  await expect(page.getByRole("button",{name:"Refresh board"})).toBeEnabled();
+});
 test("homepage displays the new biryani photograph on desktop and mobile",async({page})=>{
   for(const width of [390,1440]){
     await page.setViewportSize({width,height:900});

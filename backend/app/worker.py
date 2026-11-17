@@ -1,5 +1,6 @@
 """Independent transactional SMTP outbox worker. Never logs message bodies/tokens."""
 import argparse
+import logging
 import smtplib
 import ssl
 import time
@@ -13,6 +14,8 @@ from .config import settings
 from .db import make_engine
 from .models import Outbox, now
 
+logger = logging.getLogger(__name__)
+
 
 def deliver_batch(factory, config):
     sent = 0
@@ -21,12 +24,18 @@ def deliver_batch(factory, config):
             Outbox.status == "pending", Outbox.available_at <= now())
             .order_by(Outbox.created_at).limit(10).with_for_update(skip_locked=True)))
         for item in messages:
-            message = EmailMessage()
-            message["From"] = config.smtp_from
-            message["To"] = item.recipient
-            message["Subject"] = item.subject
-            message["Message-ID"] = f"<{item.id}@zayqora.outbox>"
-            message.set_content(item.body)
+            try:
+                message = EmailMessage()
+                message["From"] = config.smtp_from
+                message["To"] = item.recipient
+                message["Subject"] = item.subject
+                message["Message-ID"] = f"<{item.id}@zayqora.outbox>"
+                message.set_content(item.body)
+            except ValueError:
+                item.attempts += 1
+                item.status = "failed"
+                logger.error("Invalid outbox message %s marked failed.", item.id)
+                continue
             try:
                 with smtplib.SMTP(config.smtp_host, config.smtp_port, timeout=20) as smtp:
                     if config.smtp_starttls:

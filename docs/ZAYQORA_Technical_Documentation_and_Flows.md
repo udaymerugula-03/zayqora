@@ -5,7 +5,7 @@
 
 **Market:** Pakistan | **Currency:** Pakistani rupee (PKR) | **Business timezone:** Asia/Karachi
 
-**Issued:** 16 November 2026
+**Issued:** 17 November 2026
 
 **Audience:** Client reviewers, restaurant owners, platform administrators and technical maintainers.
 
@@ -78,20 +78,28 @@ All authenticated roles use the same sign-in screen. After successful authentica
 |---|---|
 | Platform website | `/`, `/pricing`, `/privacy`, `/terms` |
 | Restaurant website | `/r/[slug]`, `/r/[slug]/menu`, `/r/[slug]/about`, `/r/[slug]/contact` |
+| Configured content and policies | `/r/[slug]/gallery`, `/r/[slug]/faqs`, `/r/[slug]/policies` |
 | Ordering | `/r/[slug]/cart`, `/r/[slug]/checkout`, `/track/[private-token]` |
 | Reservations | `/r/[slug]/reservations` |
 | Account access | `/login`, `/register`, `/verify-email` |
 | Owner operations | `/app/dashboard`, `/app/orders`, `/app/menu`, `/app/reservations` |
+| Owner setup, content and service | `/app/setup`, `/app/website`, `/app/inquiries`, `/app/kitchen` |
 | Owner administration | `/app/reports`, `/app/settings`, `/app/notifications` |
 | Platform administration | `/platform/overview`, `/platform/tenants`, `/platform/plans` |
 
 The existing fictional demonstration uses `owner@zayqora.demo`, `garden@zayqora.demo` and `admin@zayqora.demo`. Passwords are supplied separately and kept in the ignored local credential file. Simplified demonstration passwords must never be reused for a real restaurant.
+
+![Release 1 roles and connected screens](technical-guide-assets\00-role-screen-map.jpg)
+
+Release alignment follows the original specification's sections 20.2 and 22.1. The setup guide, website builder, owner-operated kitchen board and enquiry inbox complete MVP workflows rather than introducing Release 2 staff roles, station routing, CRM or promotions. Gallery and FAQs are displayed only when the owner enables and populates them. Offers and review-management tabs are not placeholder MVP features.
 
 [[PAGEBREAK]]
 
 ## 3. Technical architecture and technology stack
 
 ### 3.1 Application architecture
+
+![Implemented system architecture and external email dependency](technical-guide-assets\00-system-architecture.jpg)
 
 ```text
 Browser: public pages, owner workspace or platform administration
@@ -169,6 +177,8 @@ Zayqora
 | Entity | Purpose and relationships |
 |---|---|
 | Restaurant | Tenant identity, publication/status, business profile, PKR settings, hours, fulfilment and reservation policy |
+| Website settings | Validated JSON value on Restaurant for branding, public content, SEO and optional navigation; not a separate tenant |
+| Contact enquiry | Tenant, reference, consented customer contact/message, inbox state and creation timestamp |
 | User | Verified owner membership or platform administrator role |
 | Session | Hashed opaque access token, expiry and revocation state |
 | Verification | Hashed email-verification token with expiry and one-time use |
@@ -194,12 +204,21 @@ All business endpoints are under `/api/v1`. Money is returned as decimal strings
 | Tracking | `GET /public/orders/{private-token}` | Customer-safe status view without contact/address/internal notes |
 | Reservations | `GET /public/restaurants/{slug}/availability`, `POST /public/restaurants/{slug}/reservations` | Advisory slots and authoritative table allocation |
 | Owner | `/restaurant`, `/menu/categories`, `/menu/items`, `/orders`, `/reservations`, `/tables` | Own-tenant configuration and operations |
+| Website content | `PATCH /restaurant` with `website_settings` | Validated single-template configuration, with defaults for existing tenants |
+| Public enquiry | `POST /public/restaurants/{slug}/inquiries` | Persist a consented message and return a non-secret reference |
+| Enquiry inbox | `GET /inquiries`, `PATCH /inquiries/{id}` | Paginated own-tenant inbox and audited new/read/resolved states |
 | Reports/media | `/reports/dashboard`, `/reports/sales`, `POST /media`, `/notifications` | Eligible sales, image uploads and outbox state |
 | Platform | `/platform/overview`, `/platform/tenants`, `/platform/plans` | Tenant status/plan control and plan definitions |
 
 Interactive API reference is available at `/docs`; readiness is available at `/health`. Protected calls require the server-issued bearer token. Order creation additionally requires an `Idempotency-Key` header. Never put actual tokens or passwords in shared API examples.
 
+Website text is plain text, not executable HTML. Nested image and FAQ entries have explicit length/count bounds, image URLs follow the existing safe URL rules, and optional section names come from a fixed allowlist. Publication and reservation-service rules remain server-authoritative.
+
+The public enquiry payload contains `customer_name`, `email`, `subject`, `message` and explicit `consent: true`. Its success response contains only a reference, receipt status and notification-configuration state. Owner records include the private message/contact details; the public receipt is not a way to retrieve another visitor's enquiry.
+
 ## 5. Cash ordering and order-processing flow
+
+![Server-authoritative order, cash receipt and completion workflow](technical-guide-assets\00-cash-order-flow.jpg)
 
 ### 5.1 Guest checkout
 
@@ -378,11 +397,32 @@ Public restaurant images are durable Blob objects. Local filesystem media is a d
 
 ## 10. Operations, known limitations and handover
 
+### 10.0 Release 1 document alignment
+
+| Requirement area | Implemented screen or workflow |
+|---|---|
+| Guided restaurant onboarding | `/app/setup` shows readiness from saved restaurant, menu and table data, with actions to complete configuration and publish |
+| Configurable single website template | `/app/website` manages controlled palettes, typography, About text, SEO, gallery, FAQs, cancellation information and homepage section visibility/order |
+| Website preview | Owner content preview supports desktop/tablet/mobile presentation without falsely publishing a draft |
+| Public enquiry | Restaurant contact form persists a consented message and reference before acknowledging receipt |
+| Enquiry operations | `/app/inquiries` provides a tenant-scoped inbox and new/read/resolved handling |
+| Basic kitchen screen | `/app/kitchen` displays active orders and opens the same authorized order-state workflow as Orders; not a staff KDS |
+| Order search and filtering | Reference/customer search, fulfilment, payment state and Karachi-date filters, with server-side filtering and pagination |
+| Verification recovery | Sign-in and verification screens expose the existing resend-verification endpoint and truthful delivery status |
+| Customer notifications | Business events queue order/reservation updates transactionally; actual delivery still requires SMTP and a supervised worker |
+| Optional restaurant navigation | Gallery/FAQs are conditional; reservation availability and submission respect the service setting |
+
+The original specification permits seed/demo data for development/staging; it does not prescribe Saffron Table, Garden Cafe or a demo-restaurant promotional button. The product navigation no longer depends on those sample names. A read-only demo marker retains truthful safety notices for fictional businesses.
+
+The additive schema upgrade stores website configuration and fictional-data metadata on restaurants and adds tenant-owned contact enquiries. It does not reset existing users, menus, orders, reservations or passwords. Configuration should be backed up before any deployment migration; prefer forward fixes to destructive rollback after new data has been created.
+
+This is not a claim that the entire three-release blueprint is implemented. Customer CRM/review management, coupons/offers, staff KDS/stations, QR/POS, stock, riders and exports remain Release 2; multi-branch, loyalty and advanced analytics remain later scope.
+
 ### 10.1 Notifications and readiness
 
 The readiness endpoint checks database connectivity and reports configured email/media/payment modes. An SMTP-configured indicator is configuration state, not evidence that a specific message reached an inbox.
 
-The outbox stores pending messages transactionally. A separately operated worker delivers through a real SMTP provider, retries with backoff and records sent/failed states. Successful delivery redacts the stored body. Delivery is at-least-once; a worker crash after provider acceptance can cause a duplicate.
+The outbox stores pending messages transactionally. A separately operated worker delivers through a real SMTP provider, retries transient SMTP failures with backoff and records sent/failed states. Malformed message headers are marked failed without terminating the batch or logging customer content; public enquiry subjects must be single-line text. Successful delivery redacts the stored body. Delivery is at-least-once; a worker crash after provider acceptance can cause a duplicate.
 
 ```powershell
 $env:PYTHONPATH = 'backend'
@@ -390,6 +430,8 @@ backend\.venv\Scripts\python -m app.worker
 ```
 
 The worker requires approved SMTP settings. A Vercel HTTP deployment does not by itself run this continuous worker. Verification/customer email is not operational until a real sender and worker have been configured and exercised.
+
+Database readiness is not a substitute for provider-managed backups, an independently demonstrated restore, external uptime/error monitoring, alert routing or separated staging/production resources. These operational acceptance items still require operator provisioning and approval. No backup-retention, recovery-time or capacity guarantee is made by this demonstration.
 
 ### 10.2 Development checks
 
@@ -614,3 +656,99 @@ Plans configure menu capacity and activity. This screen does not implement subsc
 The same ZAYQORA identity, readable PKR amounts and role-specific workflows are retained on mobile. These are actual mobile-viewport captures.
 
 ![Mobile public menu and owner workspace](technical-guide-assets\24-mobile-experience.jpg)
+
+[[PAGEBREAK]]
+
+### 11.25 Follow the restaurant setup guide
+
+The owner reviews readiness from saved restaurant, menu and reservation-table data. Actions lead to the relevant editor; publication remains validated by the backend.
+
+![Owner setup guide and publication readiness](technical-guide-assets\25-setup-guide.jpg)
+
+[[PAGEBREAK]]
+
+### 11.26 Configure the restaurant website
+
+The website editor controls the single template's content, approved theme/typography choices, SEO, optional gallery/FAQs, policy information and homepage sections.
+
+![Owner website content and branding editor](technical-guide-assets\26-website-editor.jpg)
+
+[[PAGEBREAK]]
+
+### 11.27 Preview before publishing
+
+The owner previews saved or draft website content in responsive presentation modes without claiming that an unpublished public route is live.
+
+![Responsive owner website preview](technical-guide-assets\27-website-preview.jpg)
+
+[[PAGEBREAK]]
+
+### 11.28 Browse a configured gallery
+
+The gallery uses owner-configured images with alternative text. It appears in restaurant navigation only when enabled and populated.
+
+![Configured public restaurant gallery](technical-guide-assets\28-public-gallery.jpg)
+
+[[PAGEBREAK]]
+
+### 11.29 Read restaurant FAQs
+
+The FAQ page displays the owner's published questions and answers. It is not a static placeholder destination.
+
+![Configured public restaurant FAQs](technical-guide-assets\29-public-faqs.jpg)
+
+[[PAGEBREAK]]
+
+### 11.30 Send a restaurant enquiry
+
+The visitor provides the minimum contact details, subject, message and consent. The demonstration uses fictional contact details; this form does not place an order or reserve a table.
+
+![Public restaurant enquiry form](technical-guide-assets\30-contact-form.jpg)
+
+[[PAGEBREAK]]
+
+### 11.31 Receive a durable enquiry reference
+
+The success state follows database persistence and supplies an enquiry reference. Queued or unavailable email delivery is stated separately from receipt.
+
+![Persisted enquiry acknowledgement](technical-guide-assets\31-enquiry-received.jpg)
+
+[[PAGEBREAK]]
+
+### 11.32 Process enquiries in the tenant inbox
+
+The owner opens the matching message and updates its new/read/resolved state. Another tenant cannot read or change the record.
+
+![Owner contact enquiry inbox](technical-guide-assets\32-owner-enquiry.jpg)
+
+[[PAGEBREAK]]
+
+### 11.33 Use the basic kitchen order board
+
+The owner sees active order tickets, item modifiers and customer instructions. Opening a ticket reuses the authorized order dialog. Staff station routing is a later release.
+
+![Live owner-operated kitchen order board](technical-guide-assets\33-kitchen-board.jpg)
+
+[[PAGEBREAK]]
+
+### 11.34 Filter the order ledger
+
+Search and fulfilment, payment and Karachi-date filters are applied by the backend, with tenant-scoped pagination.
+
+![Server-filtered owner order ledger](technical-guide-assets\34-order-filters.jpg)
+
+[[PAGEBREAK]]
+
+### 11.35 Recover email verification
+
+The registration/sign-in experience exposes verification recovery. The generic response avoids account enumeration; an unconfigured provider is not described as email delivery.
+
+![Email verification recovery form](technical-guide-assets\35-verification-recovery.jpg)
+
+[[PAGEBREAK]]
+
+### 11.36 Read the restaurant cancellation information
+
+The policy page displays configured restaurant information and does not invent provider refunds or legal approval. Paid cash cancellations/refunds are not implemented.
+
+![Restaurant policies and cancellation information](technical-guide-assets\36-public-policies.jpg)

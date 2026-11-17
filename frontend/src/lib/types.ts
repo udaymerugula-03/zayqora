@@ -1,6 +1,21 @@
 export type Money = string;
 export interface User { id: string; email: string; full_name: string; role: "owner" | "platform_admin"; restaurant_id: string | null; email_verified: boolean }
-export interface Restaurant { id: string; slug: string; name: string; tagline: string; description: string; cuisine: string; city: string; address: string; phone: string; email: string; currency: string; timezone: string; logo_url: string; hero_image_url: string; published: boolean; status: string; allow_pickup: boolean; allow_delivery: boolean; delivery_fee: Money; minimum_order: Money; tax_rate: Money; tax_inclusive: boolean; opening_hours: Record<string, {open: string; close: string; closed: boolean}>; reservation_duration_minutes: number; reservation_buffer_minutes: number; reservation_days_ahead: number; plan_id: string | null }
+export interface WebsiteSettings {
+  about_text: string;
+  seo_title: string;
+  seo_description: string;
+  theme: "navy" | "emerald" | "terracotta";
+  typography: "editorial" | "sans";
+  reservations_enabled: boolean;
+  gallery_enabled: boolean;
+  faqs_enabled: boolean;
+  gallery: {image_url: string; alt: string}[];
+  faqs: {question: string; answer: string}[];
+  cancellation_policy: string;
+  homepage_sections: ("featured" | "about" | "gallery" | "hours")[];
+}
+export interface Restaurant { id: string; slug: string; name: string; tagline: string; description: string; cuisine: string; city: string; address: string; phone: string; email: string; currency: string; timezone: string; logo_url: string; hero_image_url: string; published: boolean; status: string; is_demo?: boolean; website_settings?: WebsiteSettings; allow_pickup: boolean; allow_delivery: boolean; delivery_fee: Money; minimum_order: Money; tax_rate: Money; tax_inclusive: boolean; opening_hours: Record<string, {open: string; close: string; closed: boolean}>; reservation_duration_minutes: number; reservation_buffer_minutes: number; reservation_days_ahead: number; plan_id: string | null }
+export interface Inquiry { id: string; restaurant_id: string; reference: string; customer_name: string; email: string; subject: string; message: string; status: "new" | "read" | "resolved"; created_at: string }
 export interface Option { id?: string; name: string; price_delta: Money }
 export interface MenuItem { id: string; category_id: string; name: string; description: string; image_url: string; price: Money; available: boolean; published: boolean; featured: boolean; variant_required: boolean; variants: Option[]; modifiers: Option[] }
 export interface Category { id: string; name: string; position: number; published: boolean; items: MenuItem[] }

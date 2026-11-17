@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from sqlalchemy import (
     JSON, Boolean, DateTime, ForeignKey, ForeignKeyConstraint, Integer, Numeric,
-    String, Text, UniqueConstraint,
+    String, Text, UniqueConstraint, text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 from .db import Base
@@ -49,6 +49,8 @@ class Restaurant(Base):
     logo_url: Mapped[str] = mapped_column(Text, default="")
     hero_image_url: Mapped[str] = mapped_column(Text, default="/food/hero.jpg")
     published: Mapped[bool] = mapped_column(Boolean, default=False)
+    website_settings: Mapped[dict] = mapped_column(JSON, default=dict, server_default=text("'{}'"))
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
     status: Mapped[str] = mapped_column(String(20), default="active")
     allow_pickup: Mapped[bool] = mapped_column(Boolean, default=True)
     allow_delivery: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -178,6 +180,19 @@ class Reservation(Base):
     phone: Mapped[str] = mapped_column(String(50))
     notes: Mapped[str] = mapped_column(Text, default="")
     table_id: Mapped[str] = mapped_column(String(36))
+
+
+class ContactInquiry(Base):
+    __tablename__ = "contact_inquiries"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    restaurant_id: Mapped[str] = mapped_column(ForeignKey("restaurants.id"), index=True)
+    reference: Mapped[str] = mapped_column(String(30), unique=True)
+    customer_name: Mapped[str] = mapped_column(String(150))
+    email: Mapped[str] = mapped_column(String(254))
+    subject: Mapped[str] = mapped_column(String(160))
+    message: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(20), default="new", server_default="new")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
 class Audit(Base):

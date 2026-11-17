@@ -1,9 +1,9 @@
 {
-  "captured_at": "2026-11-16T11:44:21.622Z",
+  "captured_at": "2026-11-17T08:30:09.818Z",
   "environment": "Local production build backed by the isolated hosted demonstration database",
   "source": "http://127.0.0.1:3000",
-  "order_reference": "ZQ-72501CBD10",
-  "reservation_reference": "RS-F6EEA980C4",
+  "order_reference": "ZQ-A114CCF108",
+  "reservation_reference": "RS-D4DE9C6B6F",
   "screenshots": [
     {
       "file": "01-platform-home.jpg",
@@ -70,6 +70,14 @@
       }
     },
     {
+      "file": "35-verification-recovery.jpg",
+      "route": "/login",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
       "file": "09-owner-dashboard.jpg",
       "route": "/app/dashboard",
       "viewport": {
@@ -78,8 +86,24 @@
       }
     },
     {
+      "file": "34-order-filters.jpg",
+      "route": "/app/orders",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
       "file": "10-order-processing.jpg",
       "route": "/app/orders",
+      "viewport": {
+        "width": 1366,
+        "height": 860
+      }
+    },
+    {
+      "file": "33-kitchen-board.jpg",
+      "route": "/app/kitchen",
       "viewport": {
         "width": 1366,
         "height": 860
@@ -206,5 +230,5 @@
       }
     }
   ],
-  "mobile_refreshed_at": "2026-11-16T11:59:07.930Z"
+  "mobile_refreshed_at": "2026-11-17T08:30:37.401Z"
 }

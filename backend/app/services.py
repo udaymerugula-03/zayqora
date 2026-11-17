@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import func, select
 
 from . import models as m
+from .schemas import WebsiteSettings
 from .security import canonical, digest, fail, utc
 
 CENT = Decimal("0.01")
@@ -37,7 +38,9 @@ def serialize(obj, exclude=()):
         if key in exclude or key == "restaurant_id":
             continue
         value = getattr(obj, key)
-        if isinstance(value, Decimal):
+        if isinstance(obj, m.Restaurant) and key == "website_settings":
+            value = WebsiteSettings.model_validate(value or {}).model_dump(mode="json")
+        elif isinstance(value, Decimal):
             value = money(value)
         elif isinstance(value, datetime):
             value = utc(value).isoformat()
@@ -183,7 +186,30 @@ def apply_patch(obj, data):
             fail(422, f"{key} cannot be null.")
         if key in {"variants", "modifiers"}:
             value = normalize_options(value)
+        if key == "website_settings":
+            value = data.website_settings.model_dump(mode="json")
         setattr(obj, key, value)
+
+
+def require_reservations(restaurant):
+    if not WebsiteSettings.model_validate(restaurant.website_settings or {}).reservations_enabled:
+        fail(409, "New reservations are disabled for this restaurant.", "service_disabled")
+
+
+def queue_email(db, restaurant, kind, recipient, subject, body):
+    if recipient:
+        db.add(m.Outbox(restaurant_id=restaurant.id, kind=kind, recipient=str(recipient),
+                        subject=subject[:250], body=body))
+
+
+def queue_status_email(db, restaurant, record, kind):
+    payment = (f" Payment status: {record.payment_status}."
+               if isinstance(record, m.Order) else "")
+    receipt = (f" Cash receipt recorded: {record.currency} {money(record.total)}."
+               if kind == "cash_receipt" else "")
+    queue_email(db, restaurant, kind, record.email,
+                f"{restaurant.name}: {record.reference} update",
+                f"Reference: {record.reference}. Status: {record.status}.{payment}{receipt}")
 
 
 def enforce_cap(db, restaurant, adding=0):

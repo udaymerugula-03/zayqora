@@ -11,7 +11,8 @@ from .db import get_db
 from .security import canonical, digest, fail, rate, read_quote, sign_quote, utc
 from .services import (category_view, choose_table, money, order_view, page,
                        public_restaurant, quote_binding, quote_data, reference,
-                       reservation_window, serialize)
+                       reservation_window, serialize, queue_email,
+                       require_reservations)
 
 router = APIRouter(prefix="/public", tags=["Guest storefront"])
 
@@ -92,12 +93,16 @@ def create_order(slug: str, data: s.OrderInput, request: Request,
     db.flush()
     response = {**order_view(order), "tracking_token": tracking}
     order.creation_response = response
-    if data.email:
-        db.add(m.Outbox(restaurant_id=tenant.id, kind="order", recipient=str(data.email),
-                        subject=f"{tenant.name}: order {order.reference}",
-                        body=f"Your cash {order.fulfilment} order was received. "
-                             f"Total: PKR {money(order.total)}. "
-                             "Payment is due in cash; this is not a payment receipt."))
+    queue_email(db, tenant, "order", data.email,
+                f"{tenant.name}: order {order.reference}",
+                f"Reference: {order.reference}. Status: {order.status}. "
+                f"Your cash {order.fulfilment} order was received. "
+                f"Total: PKR {money(order.total)}. "
+                "Payment is due in cash; this is not a payment receipt.")
+    queue_email(db, tenant, "incoming_order", tenant.email,
+                f"Incoming order {order.reference}",
+                f"Reference: {order.reference}. Status: {order.status}. "
+                f"Payment status: {order.payment_status}. Review the order in your owner workspace.")
     db.commit()
     return response
 
@@ -115,6 +120,7 @@ def tracking(tracking_token: str, request: Request, db=Depends(get_db)):
 def availability(slug: str, date_value: date = Query(alias="date"),
                  party_size: int = Query(ge=1, le=30), db=Depends(get_db)):
     tenant = public_restaurant(db, slug)
+    require_reservations(tenant)
     local_now = m.now().astimezone(ZoneInfo(tenant.timezone))
     if date_value < local_now.date() or date_value > local_now.date() + timedelta(
             days=tenant.reservation_days_ahead):
@@ -138,6 +144,7 @@ def availability(slug: str, date_value: date = Query(alias="date"),
 def create_reservation(slug: str, data: s.ReservationInput, request: Request, db=Depends(get_db)):
     rate(request, "reservation", 10)
     tenant = public_restaurant(db, slug, lock=True)
+    require_reservations(tenant)
     starts, ends = reservation_window(tenant, data.starts_at, data.party_size)
     table = choose_table(db, tenant, starts, ends, data.party_size)
     if not table:
@@ -148,9 +155,32 @@ def create_reservation(slug: str, data: s.ReservationInput, request: Request, db
     db.add(reservation)
     db.flush()
     result = serialize(reservation)
-    if data.email:
-        db.add(m.Outbox(restaurant_id=tenant.id, kind="reservation", recipient=str(data.email),
-                        subject=f"{tenant.name}: reservation request {reservation.reference}",
-                        body="Your table request has been received and is awaiting owner confirmation."))
+    queue_email(db, tenant, "reservation", data.email,
+                f"{tenant.name}: reservation request {reservation.reference}",
+                f"Reference: {reservation.reference}. Status: {reservation.status}. "
+                "Your table request has been received and is awaiting owner confirmation.")
+    queue_email(db, tenant, "incoming_reservation", tenant.email,
+                f"Incoming reservation {reservation.reference}",
+                f"Reference: {reservation.reference}. Status: {reservation.status}. "
+                "Review the request in your owner workspace.")
     db.commit()
     return result
+
+
+@router.post("/restaurants/{slug}/inquiries", status_code=201)
+def create_inquiry(slug: str, data: s.InquiryInput, request: Request, db=Depends(get_db)):
+    rate(request, "inquiry", 10)
+    tenant = public_restaurant(db, slug, lock=True)
+    inquiry = m.ContactInquiry(restaurant_id=tenant.id, reference=reference("ENQ"),
+                               **data.model_dump(exclude={"consent"}))
+    db.add(inquiry)
+    db.flush()
+    queue_email(db, tenant, "contact_inquiry", tenant.email,
+                f"Contact enquiry {inquiry.reference}: {inquiry.subject}",
+                f"Reference: {inquiry.reference}. Status: {inquiry.status}. "
+                "A contact enquiry was received. Read the message and customer email in your owner inbox.")
+    notification_status = ("queued" if tenant.email and request.app.state.config.smtp_configured
+                           else "provider_not_configured")
+    db.commit()
+    return {"reference": inquiry.reference, "status": "received",
+            "notification_status": notification_status}
