@@ -12,7 +12,7 @@ export default function Home() {
         <div className="hero-note"><span className="seal" aria-hidden="true">Z</span><p>A little local. A little personal.<br/><strong>Good food. Beautifully connected.</strong></p></div>
       </div>
       <div className="editorial-collage">
-        <figure className="collage-main"><img src="/food/karahi.jpg" alt="Richly spiced chicken with fresh herbs"/><figcaption>Something worth sharing.</figcaption></figure>
+        <figure className="collage-main"><img src="/food/biryani-hero.jpg" alt="A platter of fragrant biryani garnished with lime"/><figcaption>Something worth sharing.</figcaption></figure>
         <figure className="collage-small"><img src="/food/biryani.jpg" alt="A generous serving of fragrant biryani"/><figcaption>Rooted in flavour.</figcaption></figure>
         <div className="collage-caption"><span className="eyebrow">Your next gathering</span><strong>Starts with an appetite.</strong><span>Discover · Order · Reserve</span></div>
         <span className="collage-stamp" aria-hidden="true">GOOD FOOD<br/>GOOD COMPANY<br/>✦</span>

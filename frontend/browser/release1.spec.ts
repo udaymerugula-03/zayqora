@@ -16,6 +16,17 @@ async function fillCheckout(page:Page){
   await page.getByRole("checkbox",{name:/I confirm this current total/}).check();
 }
 test.beforeEach(async({request})=>{await request.post("http://127.0.0.1:18117/__test/reset");});
+test("homepage displays the new biryani photograph on desktop and mobile",async({page})=>{
+  for(const width of [390,1440]){
+    await page.setViewportSize({width,height:900});
+    await page.goto("/");
+    const photo=page.locator(".editorial-hero .collage-main img");
+    await expect(photo).toHaveAttribute("src","/food/biryani-hero.jpg");
+    await expect(photo).toHaveAttribute("alt","A platter of fragrant biryani garnished with lime");
+    await expect.poll(()=>photo.evaluate(image=>image instanceof HTMLImageElement&&image.complete&&image.naturalWidth>0)).toBe(true);
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  }
+});
 test("discovery filters real results and both mobile menus support keyboard dismissal",async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.goto("/");

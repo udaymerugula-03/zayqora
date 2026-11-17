@@ -1,5 +1,12 @@
 [
   {
+    "file": "biryani-hero.jpg",
+    "source": "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=1600&q=85&fm=jpg",
+    "description": "Sample biryani platter for the homepage",
+    "license": "https://unsplash.com/license",
+    "note": "Licensed stock imagery for demonstration; not photographs of an actual restaurant or its dishes. Do not infer ingredients, allergens or location."
+  },
+  {
     "file": "hero.jpg",
     "source": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1600&q=85&fm=jpg",
     "description": "Sample restaurant interior",
