@@ -20,7 +20,7 @@ export function RestaurantHomeContent({restaurant:r,categories=[],preview=false}
   const featured=publishedItems.filter(item=>item.featured);
   const items=(featured.length?featured:publishedItems).slice(0,3);
   return <>
-    {isDemo(r)&&<div className="container"><p className="notice">Demonstration restaurant. Restaurant details and menu are fictional; orders and reservations do not provide real food or dining.</p></div>}
+    {isDemo(r)&&<div className="container"><p className="notice">Private development content. This restaurant is not available for public orders or bookings.</p></div>}
     <section className="restaurant-editorial container">
       <div className="restaurant-introduction"><span className="eyebrow">{[r.cuisine,r.city].filter(Boolean).join(" · ")}</span>{preview?<h3 className="preview-hero-heading">{r.name}</h3>:<h1>{r.name}</h1>}{r.tagline&&<p className="restaurant-tagline">{r.tagline}</p>}<p className="preserve-lines">{r.description}</p>
         {!preview&&<div className="actions"><Link className="button" href={`${base}/menu`}>{canOrder(r)?"Order online":"Explore the menu"} ↗</Link>{settings.reservations_enabled&&<Link className="text-link" href={`${base}/reservations`}>Reserve a table →</Link>}</div>}

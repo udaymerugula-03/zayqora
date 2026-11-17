@@ -5,6 +5,7 @@ import {useQuery} from "@tanstack/react-query";
 import {api,send} from "@/lib/api";
 import type {Restaurant,Page} from "@/lib/types";
 import {dateTime} from "@/lib/commerce";
+import {isDemo,isPublicRestaurant} from "@/lib/website";
 import {Badge,Empty,Field,Loading,Notice,PageTitle} from "./ui";
 import {ActionMessages,useAction} from "./workspace";
 import {Upload} from "./upload";
@@ -22,7 +23,7 @@ function SettingsForm({value:r}:{value:Restaurant}){
   const [logo,setLogo]=useState(r.logo_url||"");
   const [hero,setHero]=useState(r.hero_image_url||"");
   const [hours,setHours]=useState(r.opening_hours||{});
-  const [published,setPublished]=useState(r.published);
+  const [published,setPublished]=useState(r.published&&!isDemo(r));
   async function save(e:React.FormEvent<HTMLFormElement>){
     e.preventDefault();
     const f=new FormData(e.currentTarget);
@@ -40,7 +41,7 @@ function SettingsForm({value:r}:{value:Restaurant}){
   return <div className="settings-layout"><nav className="settings-navigation" aria-label="Restaurant settings sections"><span className="eyebrow">Set the scene</span>{[["details","Restaurant details"],["imagery","Imagery & identity"],["pricing","Services & pricing"],["hours","Opening hours"],["rules","Reservation rules"],["publish","Publication"]].map(([id,label],index)=><a key={id} href={`#settings-${id}`}><span>0{index+1}</span>{label}</a>)}<p>Changes apply when you save the restaurant settings below.</p></nav><form onSubmit={save} className="settings-form">
     <ActionMessages action={action}/>
     <section id="settings-details" className="panel">
-      <div className="row between wrap"><h2>Restaurant details</h2><Link className="text-link" href={`/r/${r.slug}`} target="_blank">View public site ↗</Link></div>
+      <div className="row between wrap"><h2>Restaurant details</h2>{isPublicRestaurant(r)&&<Link className="text-link" href={`/r/${r.slug}`} target="_blank" rel="noopener noreferrer">View public site ↗</Link>}</div>
       <div className="form-grid">
         <Field label="Restaurant name"><input name="name" required minLength={2} maxLength={160} defaultValue={r.name}/></Field>
         <Field label="Tagline"><input name="tagline" maxLength={200} defaultValue={r.tagline}/></Field>
@@ -99,7 +100,8 @@ function SettingsForm({value:r}:{value:Restaurant}){
       <h2>Publish your restaurant</h2>
       <p>The server checks your setup before publishing. Suspended restaurants cannot accept public orders or reservations.</p>
       <p>Platform status: <Badge>{r.status}</Badge></p>
-      <label className="choice"><input type="checkbox" checked={published} onChange={e=>setPublished(e.target.checked)}/>Publish restaurant website</label>
+      {isDemo(r)&&<Notice>This workspace contains private development data. It cannot be made public. Register a separate restaurant account with approved business information for customer service.</Notice>}
+      <label className="choice"><input type="checkbox" checked={published} disabled={isDemo(r)} onChange={e=>setPublished(e.target.checked)}/>Publish restaurant website</label>
       <ActionMessages action={action}/><button disabled={action.busy}>{action.busy?"Saving restaurant…":"Save restaurant settings"}</button>
     </section>
   </form></div>;

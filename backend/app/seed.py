@@ -18,7 +18,7 @@ from .security import passwords
 def seed(db):
     plan = db.scalar(select(m.Plan).where(m.Plan.name == "Launch"))
     if not plan:
-        plan = m.Plan(name="Launch", description="Release 1 demonstration plan.", max_menu_items=30)
+        plan = m.Plan(name="Launch", description="Restaurant website, cash orders and reservations.", max_menu_items=30)
         db.add(plan)
         db.flush()
     credentials = {}
@@ -34,7 +34,7 @@ def seed(db):
                 slug=slug, name=name, tagline="A ZAYQORA demonstration restaurant",
                 description="Demonstration restaurant and menu, not a claim of a real operating business.",
                 city="Karachi", address="Demonstration address, Karachi, Pakistan",
-                phone="+92 300 0000000", email=email, published=True, is_demo=True,
+                phone="+92 300 0000000", email=email, published=False, is_demo=True,
                 allow_delivery=True, delivery_fee="150.00", minimum_order="0.00",
                 plan_id=plan.id, tax_rate="0.00", opening_hours=m.hours())
             db.add(restaurant)

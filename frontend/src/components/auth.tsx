@@ -75,8 +75,8 @@ export function AuthForm({register:creating=false}:{register?:boolean}) {
   }
   return <div className="auth-card">
     <div className="auth-step"><span>✦</span><small>{creating?"Your restaurant journey begins here":"Your workspace awaits"}</small></div>
-    <h1>{creating?"Make yourself at home.":"Welcome back."}</h1>
-    <p>{creating?"Create your owner account. Verify your email before signing in.":"Sign in to your owner or VIRELEO platform workspace."}</p>
+    <h1>{creating?"Create your restaurant.":"Sign in to ZAYQORA."}</h1>
+    <p>{creating?"Create your owner account. Verify your email before signing in.":"Owners and platform administrators sign in here. Your account opens the correct workspace."}</p>
     {message?<Notice>{message}<p><Link href="/login">Return to sign in</Link></p></Notice>:<form onSubmit={handleSubmit(submit)} noValidate>
       {creating&&<>
         <Field label="Full name" error={errors.full_name?.message}><input autoComplete="name" {...register("full_name")}/></Field>

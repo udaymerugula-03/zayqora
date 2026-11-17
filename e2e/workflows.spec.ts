@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 
 type Credentials = Record<string, { password: string; role: string }>;
+const publicRestaurantSlug = process.env.E2E_PUBLIC_RESTAURANT_SLUG;
+const publicOwnerEmail = process.env.E2E_PUBLIC_OWNER_EMAIL;
 function credentials(): Credentials {
   return JSON.parse(
     readFileSync(process.env.E2E_CREDENTIALS_FILE ?? ".demo-credentials.json", "utf8"),
@@ -21,7 +23,7 @@ async function signIn(page: Page, email: string) {
     });
   }
   await expect(page).toHaveURL(
-    email === "admin@zayqora.demo" ? /\/platform\/overview$/ : /\/app\/dashboard$/,
+    credentials()[email].role === "platform_admin" ? /\/platform\/overview$/ : /\/app\/dashboard$/,
   );
 }
 
@@ -29,10 +31,11 @@ test("guest cash order reaches paid completion through the owner workspace", asy
   page,
 }, testInfo) => {
   test.setTimeout(180_000);
+  test.skip(!publicRestaurantSlug || !publicOwnerEmail, "Public flows need an explicitly configured isolated test restaurant and owner; private seed tenants must not be published.");
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("homepage.png"), fullPage: true });
-  await page.goto("/r/saffron-table/menu");
+  await page.goto(`/r/${publicRestaurantSlug}/menu`);
   await expect(page.getByRole("button", { name: "Customise +" }).first()).toBeEnabled();
   await page.screenshot({ path: testInfo.outputPath("menu.png"), fullPage: true });
   await page.getByRole("button", { name: "Customise +" }).first().click();
@@ -41,7 +44,7 @@ test("guest cash order reaches paid completion through the owner workspace", asy
   const variants = dialog.getByRole("radio");
   if (await variants.count()) await variants.first().check();
   await dialog.getByRole("button", { name: "Add to bag +" }).click();
-  await page.goto("/r/saffron-table/checkout");
+  await page.goto(`/r/${publicRestaurantSlug}/checkout`);
   await page.getByLabel("Full name").fill("Demonstration Guest");
   await page.getByLabel("Email address").fill("demo-guest@example.com");
   await page.getByLabel("Phone number").fill("+923001234567");
@@ -49,7 +52,7 @@ test("guest cash order reaches paid completion through the owner workspace", asy
   await page.getByRole("checkbox", { name: /I confirm this current total/ }).check();
   const creation = page.waitForResponse(response =>
     response.request().method() === "POST" &&
-    new URL(response.url()).pathname === "/api/v1/public/restaurants/saffron-table/orders",
+    new URL(response.url()).pathname === `/api/v1/public/restaurants/${publicRestaurantSlug}/orders`,
   );
   await page.getByRole("button", { name: "Place cash order →" }).click();
   const created = await creation;
@@ -61,7 +64,7 @@ test("guest cash order reaches paid completion through the owner workspace", asy
   await expect(page.locator("main")).toContainText(reference);
   await page.screenshot({ path: testInfo.outputPath("tracking.png"), fullPage: true });
 
-  await signIn(page, "owner@zayqora.demo");
+  await signIn(page, publicOwnerEmail!);
   await page.screenshot({ path: testInfo.outputPath("owner-dashboard.png"), fullPage: true });
   await page.goto("/app/orders");
   const row = page.getByRole("row").filter({ hasText: reference });
@@ -120,15 +123,29 @@ test("live workspace pages retain branding and load their actual API data", asyn
   }
 });
 
+test("private seed restaurants are unavailable to public visitors", async ({page,request}) => {
+  const response = await request.get("/api/v1/public/restaurants");
+  expect(response.status()).toBe(200);
+  const listing = await response.json();
+  expect(listing.items.every((restaurant:{is_demo:boolean}) => !restaurant.is_demo)).toBe(true);
+  for (const slug of ["saffron-table","garden-cafe"]) {
+    const detail = await request.get(`/api/v1/public/restaurants/${slug}`);
+    expect(detail.status()).toBe(404);
+    await page.goto(`/r/${slug}`);
+    await expect(page.getByRole("heading",{name:"Page not available",exact:true})).toBeVisible();
+  }
+});
+
 test("a guest reservation request appears in the owner queue and can be resolved", async ({
   page,
 }, testInfo) => {
   test.setTimeout(120_000);
+  test.skip(!publicRestaurantSlug || !publicOwnerEmail, "Public flows need an explicitly configured isolated test restaurant and owner; private seed tenants must not be published.");
   const tomorrow = new Date(Date.now() + 86_400_000);
   const date = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Karachi", year: "numeric", month: "2-digit", day: "2-digit",
   }).format(tomorrow);
-  await page.goto("/r/saffron-table/reservations");
+  await page.goto(`/r/${publicRestaurantSlug}/reservations`);
   await page.getByLabel("Date · Asia/Karachi").fill(date);
   await page.getByRole("group", { name: "Available reservation slots" })
     .getByRole("button").first().click();
@@ -142,7 +159,7 @@ test("a guest reservation request appears in the owner queue and can be resolved
   await expect(page.getByText("REQUESTED", { exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("reservation-received.png"), fullPage: true });
 
-  await signIn(page, "owner@zayqora.demo");
+  await signIn(page, publicOwnerEmail!);
   await page.goto("/app/reservations");
   const row = page.getByRole("row").filter({ hasText: reference });
   await row.getByRole("button", { name: "Review", exact: true }).click();

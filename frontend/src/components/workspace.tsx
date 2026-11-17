@@ -5,6 +5,7 @@ import {usePathname,useRouter} from "next/navigation";
 import {useQuery,useQueryClient} from "@tanstack/react-query";
 import {api,ApiError} from "@/lib/api";
 import type {User} from "@/lib/types";
+import {BRAND} from "@/lib/commerce";
 import {Brand,Loading,Notice} from "./ui";
 const UserContext=createContext<User|null>(null);
 export const useUser=()=>useContext(UserContext)!;
@@ -21,13 +22,13 @@ export function Workspace({platform=false,children}:{platform?:boolean;children:
  if((q.data.role==="platform_admin")!==platform)return <Loading/>;
  return <UserContext.Provider value={q.data}><div className={`workspace ${menuOpen?"workspace-menu-open":""}`}>
    <header className="workspace-mobile-header"><Brand/><button ref={menuToggle} className="secondary small" aria-expanded={menuOpen} aria-controls="workspace-sidebar" onClick={()=>setMenuOpen(!menuOpen)}>{menuOpen?"Close":"Workspace menu"} <span aria-hidden="true">{menuOpen?"×":"☰"}</span></button></header>
-   <aside id="workspace-sidebar" className="workspace-sidebar" style={{overflowY:"auto"}}><div className="workspace-brand"><Brand/><span className="workspace-edition">THE HOSPITALITY EDITION / 01</span></div><div className="workspace-label">{platform?"VIRELEO · PLATFORM ADMIN":"YOUR RESTAURANT, CONNECTED"}</div>
+   <aside id="workspace-sidebar" className="workspace-sidebar" style={{overflowY:"auto"}}><div className="workspace-brand"><Brand/><span className="workspace-edition">{platform?"PLATFORM ADMINISTRATION":"RESTAURANT WORKSPACE"}</span></div><div className="workspace-label">{platform?"PLATFORM ADMIN":"RESTAURANT OWNER"}</div>
      <nav aria-label="Workspace">{nav.map(([url,label,icon],index)=><Link aria-current={path===`/${platform?"platform":"app"}/${url}`?"page":undefined} href={`/${platform?"platform":"app"}/${url}`} key={url}><span className="nav-icon" aria-hidden="true">{icon}</span><span>{label}</span><small>{String(index+1).padStart(2,"0")}</small></Link>)}</nav>
-     <div className="sidebar-note"><span aria-hidden="true">✦</span><strong>Room for good things.</strong><p>{platform?"Thoughtful controls for a connected restaurant collection.":"A clear workspace. A little more time for hospitality."}</p></div>
+     <div className="sidebar-note"><span aria-hidden="true">✦</span><strong>Room for good things.</strong><p>{platform?"ZAYQORA platform administration, operated by VIRELEO.":"A clear workspace. A little more time for hospitality."}</p></div>
      <div className="sidebar-bottom"><span className="avatar">{q.data.full_name.slice(0,1)}</span><div><strong>{q.data.full_name}</strong><small>{q.data.role.replaceAll("_"," ")}</small></div><button className="text-button" disabled={loggingOut} onClick={logout}>{loggingOut?"…":"Sign out"}</button></div>
    </aside>
    <div className="workspace-body"><header className="workspace-top"><div className="workspace-breadcrumb"><span>{platform?"Platform":"Restaurant workspace"}</span><i>/</i><strong>{nav.find(([url])=>path.endsWith(`/${url}`))?.[1]||"Overview"}</strong></div><div><span className="cash-indicator"><span className="status-dot"/> Cash only · PKR</span><Link href="/">Visit ZAYQORA ↗</Link></div></header>
-     <main id="main" className="workspace-main">{error&&<Notice error>Sign out failed: {error}. Your session has not been assumed revoked.</Notice>}{children}</main><div className="workspace-foot"><span>ZAYQORA · Good food. Beautifully connected.</span><span>Release 1 · PKR · Asia/Karachi</span></div>
+     <main id="main" className="workspace-main">{error&&<Notice error>Sign out failed: {error}. Your session has not been assumed revoked.</Notice>}{children}</main><div className="workspace-foot"><span>{BRAND.name} · {BRAND.tagline}</span><span>Pakistan · PKR · Asia/Karachi</span></div>
    </div>
  </div></UserContext.Provider>;
 }

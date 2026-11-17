@@ -14,6 +14,10 @@ export function isDemo(restaurant: Pick<Restaurant, "is_demo" | "slug">): boolea
   return restaurant.is_demo ?? ["saffron-table", "garden-cafe"].includes(restaurant.slug);
 }
 
+export function isPublicRestaurant(restaurant: Pick<Restaurant,"is_demo"|"slug"|"published"|"status">): boolean {
+  return restaurant.published && restaurant.status==="active" && !isDemo(restaurant);
+}
+
 export function canOrder(restaurant: Pick<Restaurant, "allow_delivery" | "allow_pickup">): boolean {
   return restaurant.allow_delivery || restaurant.allow_pickup;
 }

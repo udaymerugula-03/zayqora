@@ -2,11 +2,51 @@ import {test,expect} from "@playwright/test";
 
 test.beforeEach(async({request})=>{await request.post("http://127.0.0.1:18117/__test/reset");});
 
-test("platform links do not force visitors into a sample restaurant",async({page})=>{
+test("owner-focused homepage separates registration from customer browsing",async({page})=>{
   await page.goto("/");
-  await expect(page.locator(".editorial-hero a[href='/register']")).toBeVisible();
+  const hero=page.locator(".editorial-hero");
+  await expect(hero.getByRole("link")).toHaveCount(1);
+  await expect(hero.getByRole("link",{name:"Create your restaurant website",exact:true})).toHaveAttribute("href","/register");
+  await expect(hero.getByRole("link",{name:/Discover|Browse/})).toHaveCount(0);
   await expect(page.locator("footer a[href^='/r/']")).toHaveCount(0);
   await expect(page.locator(".collage-main img")).toHaveAttribute("src","/food/biryani-hero.jpg");
+  await hero.getByRole("link").click();
+  await expect(page).toHaveURL(/\/register$/);
+  await expect(page.getByRole("heading",{level:1,name:"Create your restaurant."})).toBeVisible();
+  await page.goto("/");
+  await page.getByRole("navigation",{name:"Main navigation"}).getByRole("link",{name:"Browse restaurants",exact:true}).click();
+  await expect(page).toHaveURL(/\/#discover$/);
+  await expect(page.locator("#discover")).toBeInViewport();
+  await page.locator(".restaurant-card").click();
+  await expect(page).toHaveURL(/\/r\/saffron-table$/);
+  await expect(page.getByRole("navigation",{name:"Restaurant",exact:true}).getByRole("link",{name:"Order online",exact:true})).toBeVisible();
+});
+
+test("public owner and admin screens share product branding and action colours",async({page})=>{
+  await page.goto("/login");
+  await expect(page.getByRole("heading",{level:1,name:"Sign in to ZAYQORA."})).toBeVisible();
+  await expect(page.getByRole("navigation",{name:"Main navigation"}).getByRole("link",{name:"Owner & admin sign in",exact:true})).toHaveAttribute("href","/login");
+  const colours=await page.locator(".site-header .brand").evaluate(brand=>({
+    name:getComputedStyle(brand).color,
+    symbol:getComputedStyle(brand.querySelector(".brand-symbol")!).color,
+    accent:getComputedStyle(document.querySelector(".site-header .button")!).backgroundColor
+  }));
+  for(const [role,path] of [["test-owner","/app/dashboard"],["test-admin","/platform/overview"]]){
+    await page.evaluate(token=>sessionStorage.setItem("zayqora-token",token),role);
+    await page.goto(path);
+    const brand=page.locator(".workspace-brand .brand");
+    await expect(brand).toBeVisible();
+    await expect(brand).toContainText("ZAYQORA");
+    await expect(brand).toContainText("Good food. Beautifully connected.");
+    await expect(brand).toHaveCSS("color",colours.name);
+    await expect(brand.locator(".brand-symbol")).toHaveCSS("color",colours.symbol);
+    await expect(page.locator(".workspace-sidebar a[aria-current=page]")).toHaveCSS("background-color",colours.accent);
+    if(role==="test-admin"){
+      await expect(page).toHaveTitle("Platform administration | ZAYQORA");
+      await expect(page.getByText("ZAYQORA · Platform administration",{exact:true})).toBeVisible();
+      await expect(page.getByText(/VIRELEO manages restaurant access/)).toBeVisible();
+    }
+  }
 });
 
 test("website editor persists settings and the public template uses real tenant content",async({page})=>{
@@ -123,15 +163,39 @@ test("public tenant pages adapt to mobile without document overflow",async({page
   }
 });
 
-test("public search metadata uses configured origin and excludes sample restaurants from sitemap",async({page,request})=>{
+test("private development restaurants stay inaccessible while owners retain their preview",async({page,request})=>{
+  await request.post("http://127.0.0.1:18117/__test/restaurant",{data:{is_demo:true}});
+  await page.goto("/");
+  await expect(page.locator(".restaurant-card")).toHaveCount(0);
+  await expect(page.getByText("No restaurants are currently published. Please check back soon.",{exact:true})).toBeVisible();
+  await expect(page.getByLabel("Choose city").getByRole("option",{name:"Lahore",exact:true})).toHaveCount(0);
+  for(const path of ["","/menu","/cart","/checkout","/reservations","/contact","/about","/gallery","/faqs","/policies"]){
+    const response=await page.goto(`/r/saffron-table${path}`);
+    expect(response?.status()).toBe(404);
+    await expect(page.getByRole("heading",{name:"Page not available",exact:true})).toBeVisible();
+  }
+  await page.addInitScript(()=>sessionStorage.setItem("zayqora-token","test-owner"));
+  await page.goto("/app/setup");
+  await expect(page.getByText("Private development data",{exact:true})).toBeVisible();
+  await expect(page.getByRole("button",{name:"Publication unavailable",exact:true})).toBeDisabled();
+  await expect(page.getByRole("link",{name:"Open public site ↗",exact:true})).toHaveCount(0);
+  await page.goto("/app/website");
+  await expect(page.getByRole("region",{name:"Website content preview"})).toBeVisible();
+  await expect(page.getByRole("link",{name:"Open saved public site ↗",exact:true})).toHaveCount(0);
+  await page.goto("/app/settings");
+  await expect(page.getByRole("checkbox",{name:"Publish restaurant website",exact:true})).toBeDisabled();
+  await expect(page.getByRole("checkbox",{name:"Publish restaurant website",exact:true})).not.toBeChecked();
+});
+
+test("public search metadata uses configured origin and excludes private restaurants from sitemap",async({page,request})=>{
   await page.goto("/r/saffron-table/about");
-  await expect(page.locator("meta[name=robots]")).toHaveAttribute("content",/noindex/);
   await expect(page.locator("link[rel=canonical]")).toHaveAttribute("href","http://127.0.0.1:3117/r/saffron-table/about");
-  const demoSitemap=await request.get("/sitemap.xml");
-  expect(await demoSitemap.text()).not.toContain("/r/saffron-table");
-  await request.post("http://127.0.0.1:18117/__test/restaurant",{data:{is_demo:false}});
   const publishedSitemap=await request.get("/sitemap.xml");
   expect(await publishedSitemap.text()).toContain("http://127.0.0.1:3117/r/saffron-table/menu");
+  await request.post("http://127.0.0.1:18117/__test/restaurant",{data:{is_demo:true}});
+  const privateSitemap=await request.get("/sitemap.xml");
+  expect(await privateSitemap.text()).not.toContain("/r/saffron-table");
+  await request.post("http://127.0.0.1:18117/__test/restaurant",{data:{is_demo:false}});
   await request.post("http://127.0.0.1:18117/__test/restaurant",{data:{published:false}});
   const unpublishedSitemap=await request.get("/sitemap.xml");
   expect(await unpublishedSitemap.text()).not.toContain("/r/saffron-table");

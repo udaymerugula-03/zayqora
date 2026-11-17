@@ -12,6 +12,16 @@ guest cart and cash checkout, private order tracking, reservations, a restaurant
 owner workspace, and basic platform administration. One ZAYQORA visual identity
 is used throughout the public and authenticated interfaces.
 
+The platform homepage is owner-focused, with one registration action in its
+hero. Customer browsing remains a separate navigation link to published
+restaurant websites, where menu, ordering and reservation actions belong.
+The directory is a convenience, not a document-mandated marketplace. Owners
+and platform administrators share the explicitly labelled sign-in screen.
+VIRELEO is the platform operator specified by the document, not a second product
+brand. Shared navy/teal/gold tokens and the ZAYQORA logo remain consistent;
+restaurant theme presets remain configurable as required by section 6.3.
+Storefront and operational layouts stay task-specific, following section 10.1.
+
 Release alignment follows the supplied document's sections 20.2 and 22.1.
 The owner workspace includes a setup guide, configurable website content,
 contact enquiries and a basic owner-operated kitchen order board. The latter
@@ -142,10 +152,14 @@ information. The contact form saves an enquiry in the owner's inbox before
 acknowledging receipt. An acknowledgement does not mean an email was delivered
 or a booking/order was accepted.
 
-Saffron Table and Garden Cafe are seed data, not names mandated by the product
-specification. The read-only `is_demo` marker preserves truthful fictional-data
-notices without hardcoding one restaurant into product navigation. Keep this
-marker on the supplied fictional tenants.
+Saffron Table and Garden Cafe are private development seed data, not names
+mandated by the product specification. Restaurants with the read-only `is_demo`
+marker are excluded from public listings, direct website/API access and public
+ordering, booking, enquiry and tracking flows. Their records remain available
+to authorised owners and platform administrators. Owners cannot clear this
+marker or publish these records. Create a separate account with approved real
+business details instead of relabelling fictional data. An empty public
+directory is intentional until a real restaurant is configured and published.
 
 ## Development checks
 
@@ -157,11 +171,16 @@ backend\.venv\Scripts\python -m pytest backend\tests -q
 npm.cmd run test:e2e
 ```
 
-Browser workflows require the running API/frontend, seeded demo accounts and an
-installed Google Chrome browser. They create fictional orders and reservations;
-never target a real restaurant database. Use `E2E_BASE_URL` to select an isolated
-hosted demonstration. The backend guide explains `TEST_DATABASE_URL` and its
-disposable PostgreSQL schemas.
+Browser workflows require the running API/frontend and an installed Google
+Chrome browser. Private seeded accounts support workspace and public-exclusion
+checks. Public order/reservation workflows require an explicitly configured
+restaurant in an isolated test environment: set `E2E_PUBLIC_RESTAURANT_SLUG`,
+`E2E_PUBLIC_OWNER_EMAIL` and its entry in `E2E_CREDENTIALS_FILE`. Without these,
+those two mutating flows are explicitly skipped; private seed tenants are not
+relabelled or republished. Never target a real restaurant database. Use
+`E2E_BASE_URL` to select the isolated environment. The backend guide explains
+`TEST_DATABASE_URL` and its disposable PostgreSQL schemas. Isolated frontend
+browser fixtures cover public screens without publishing test businesses.
 
 ## Hosting
 

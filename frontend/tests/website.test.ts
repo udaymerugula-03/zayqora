@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {canOrder,isDemo,safeImageUrl,websiteSettings,websiteSettingsSchema} from "../src/lib/website.ts";
+import {canOrder,isDemo,isPublicRestaurant,safeImageUrl,websiteSettings,websiteSettingsSchema} from "../src/lib/website.ts";
 
 test("legacy website data receives safe independent defaults",()=>{
   const first=websiteSettings({});const second=websiteSettings({});
@@ -20,6 +20,13 @@ test("ordering needs at least one enabled fulfilment service",()=>{
   assert.equal(canOrder({allow_pickup:false,allow_delivery:false}),false);
   assert.equal(canOrder({allow_pickup:true,allow_delivery:false}),true);
   assert.equal(canOrder({allow_pickup:false,allow_delivery:true}),true);
+});
+test("public visibility requires a real active published restaurant",()=>{
+  const restaurant={slug:"real-restaurant",is_demo:false,published:true,status:"active"};
+  assert.equal(isPublicRestaurant(restaurant),true);
+  assert.equal(isPublicRestaurant({...restaurant,is_demo:true}),false);
+  assert.equal(isPublicRestaurant({...restaurant,published:false}),false);
+  assert.equal(isPublicRestaurant({...restaurant,status:"suspended"}),false);
 });
 test("gallery URLs reject unsafe protocols and non-media relative paths",()=>{
   for(const image of ["/food/biryani.jpg","/media/photo.webp","https://images.example.com/photo.jpg"])assert.equal(safeImageUrl(image),true,image);

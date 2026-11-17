@@ -22,6 +22,7 @@ def test_demo_seed_uses_simple_emails_and_preserves_existing_credentials(databas
         restaurant = db.get(m.Restaurant, owner.restaurant_id)
         assert restaurant.slug == "saffron-table"
         assert restaurant.is_demo is True
+        assert restaurant.published is False
         assert restaurant.currency == "PKR" and restaurant.timezone == "Asia/Karachi"
         assert passwords.verify(owner.password_hash, generated[owner.email]["password"])
         owner.password_hash = passwords.hash(secrets.token_urlsafe(24))

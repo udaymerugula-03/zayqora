@@ -3,6 +3,7 @@ import {useState} from "react";
 import Link from "next/link";
 import {useQuery} from "@tanstack/react-query";
 import {api,send} from "@/lib/api";
+import {isDemo} from "@/lib/website";
 import type {Page,Restaurant,Plan} from "@/lib/types";
 import {Badge,Dialog,Empty,Field,Loading,Notice,PageTitle} from "./ui";
 import {ActionMessages,useAction} from "./workspace";
@@ -12,11 +13,11 @@ type Overview={total_tenants:number;active_tenants:number;suspended_tenants:numb
 export function PlatformOverview(){
   const q=useQuery({queryKey:["platform-overview"],queryFn:()=>api<Overview>("/platform/overview")});
   return <>
-    <PageTitle eyebrow="VIRELEO platform administration" title="The bigger picture. Clearly."><p>Actual tenant and order counts. No inferred revenue or recurring billing metrics.</p></PageTitle>
+    <PageTitle eyebrow="ZAYQORA · Platform administration" title="The bigger picture. Clearly."><p>Actual tenant and order counts. No inferred revenue or recurring billing metrics.</p></PageTitle>
     <section className="platform-welcome"><div><span className="eyebrow">The restaurant collection, connected</span><h2>A considered platform.<br/><em>A clearer perspective.</em></h2><p>Manage restaurant access and plan entitlements, with a reason behind every administrative change.</p></div><span className="platform-monogram" aria-hidden="true">Z<span>✦</span></span></section>
     {q.isPending?<Loading/>:q.isError?<Notice error>{q.error.message}<button onClick={()=>q.refetch()}>Retry overview</button></Notice>:<div className="stats-grid">{Object.entries(q.data).map(([k,v],index)=><article className="stat-card" key={k}><div className="stat-top"><span>{k.replaceAll("_"," ")}</span><span className="stat-index">0{index+1}</span></div><strong>{v}</strong><small>Current platform records</small></article>)}</div>}
     <div className="platform-control-grid"><Link className="platform-control" href="/platform/tenants"><span className="eyebrow">01 / THE COLLECTION</span><h2>Restaurant access</h2><p>Review tenants, publication states and platform access. Every change remains server-authoritative.</p><strong>Manage restaurants ↗</strong></Link><Link className="platform-control" href="/platform/plans"><span className="eyebrow">02 / ROOM TO GROW</span><h2>Plan entitlements</h2><p>Maintain menu-item limits and active plans. Clear entitlements, without invented billing metrics.</p><strong>Review plans ↗</strong></Link></div>
-    <section className="panel scope-panel"><span className="eyebrow">A little operational clarity</span><h2>Release 1 operating scope</h2><p>Restaurant sites, cash orders, reservations and owner workspaces. VIRELEO manages restaurant access and plan entitlements; no online payment provider, subscription collection, staff POS or inventory suite is enabled.</p></section>
+    <section className="panel scope-panel"><span className="eyebrow">Supported operations</span><h2>Your connected restaurant platform</h2><p>Restaurant sites, cash orders, reservations and owner workspaces. VIRELEO manages restaurant access and plan entitlements; no online payment provider, subscription collection, staff POS or inventory suite is enabled.</p></section>
   </>;
 }
 export function Tenants(){
@@ -26,7 +27,7 @@ export function Tenants(){
   const [selected,setSelected]=useState<{restaurant:Restaurant;kind:"status"|"plan"}|null>(null);
   const q=useQuery({queryKey:["tenants",page,query],queryFn:()=>api<Page<Restaurant>>(`/platform/tenants?page=${page}&page_size=20&q=${encodeURIComponent(query)}`)});
   return <>
-    <PageTitle eyebrow="VIRELEO · Restaurant access" title="A thoughtful home for every tenant."><p>Status and plan changes require an administrative reason. Access controls remain backend-authoritative.</p></PageTitle>
+    <PageTitle eyebrow="ZAYQORA · Restaurant access" title="A thoughtful home for every tenant."><p>Status and plan changes require an administrative reason. Access controls remain backend-authoritative.</p></PageTitle>
     <form className="filter-bar" onSubmit={e=>{e.preventDefault();setQuery(search);setPage(1);}}>
       <Field label="Search restaurants"><input value={search} onChange={e=>setSearch(e.target.value)}/></Field><button>Search tenants</button>
     </form>
@@ -35,7 +36,7 @@ export function Tenants(){
         <thead><tr><th>Restaurant</th><th>Status</th><th>Public site</th><th>Plan ID</th><th>Actions</th></tr></thead>
         <tbody>{q.data.items.map(r=><tr key={r.id}>
           <td><strong>{r.name}</strong><small>{r.slug} · {r.city}</small></td>
-          <td><Badge>{r.status}</Badge></td><td>{r.published?"Published":"Draft"}</td><td>{r.plan_id||"Unassigned"}</td>
+          <td><Badge>{r.status}</Badge></td><td>{isDemo(r)?"Private development data":r.published?"Published":"Draft"}</td><td>{r.plan_id||"Unassigned"}</td>
           <td><div className="actions wrap"><button className="secondary small" onClick={()=>setSelected({restaurant:r,kind:"status"})}>Change status</button><button className="secondary small" onClick={()=>setSelected({restaurant:r,kind:"plan"})}>Assign plan</button></div></td>
         </tr>)}</tbody>
       </table></div>:<Empty>No restaurants match your search.</Empty>}
@@ -67,7 +68,7 @@ export function PlatformPlans(){
   const q=useQuery({queryKey:["platform-plans"],queryFn:()=>api<{items:Plan[]}>("/platform/plans")});
   const [selected,setSelected]=useState<Plan|null|undefined>();
   return <>
-    <PageTitle eyebrow="VIRELEO · Honest entitlements" title="Plans with a clear purpose."><p>Define supported menu-item limits. No billing prices or recurring revenue are fabricated.</p></PageTitle>
+    <PageTitle eyebrow="ZAYQORA · Plan entitlements" title="Plans with a clear purpose."><p>Define supported menu-item limits. No billing prices or recurring revenue are fabricated.</p></PageTitle>
     <button onClick={()=>setSelected(null)}>+ Create plan</button>
     {q.isPending?<Loading/>:q.isError?<Notice error>{q.error.message}<button onClick={()=>q.refetch()}>Retry plans</button></Notice>:<div className="plan-grid">
       {q.data.items.map(p=><section className="panel plan" key={p.id}><Badge>{p.active?"active":"inactive"}</Badge><h2>{p.name}</h2><p>{p.description}</p><h3>{p.max_menu_items} menu items</h3><button className="secondary" onClick={()=>setSelected(p)}>Edit entitlements</button></section>)}

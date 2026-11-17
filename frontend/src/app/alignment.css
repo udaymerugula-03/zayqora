@@ -93,3 +93,13 @@
   .restaurant-gallery{grid-template-columns:1fr}
   .website-entry{padding:14px}
 }
+.platform-hero .editorial-copy h1{font-size:clamp(44px,5.8vw,82px);letter-spacing:-.04em}
+.platform-hero .editorial-copy>p{max-width:440px}
+.gather-section.section{padding-top:76px}
+.workspace-brand{background:var(--cream);border:1px solid var(--line);border-radius:var(--radius);padding:18px 9px}
+.workspace-brand .brand{color:var(--navy)}
+.workspace-brand .brand-symbol{color:var(--teal)}
+.workspace-brand .brand-symbol>span{color:var(--gold)}
+.workspace-brand .brand small,.workspace-brand .workspace-edition{color:var(--muted)}
+.workspace-brand .workspace-edition{margin-top:14px;letter-spacing:1px}
+.workspace-sidebar nav a[aria-current=page]{background:var(--teal);border-color:var(--teal);color:white}

@@ -1,6 +1,6 @@
 # ZAYQORA Release 1 API
 
-FastAPI modular monolith; PostgreSQL is the only supported runtime database. Cash delivery/pickup only. Demo restaurants are clearly labelled demonstrations. No reviews, revenues or payments are fabricated.
+FastAPI modular monolith; PostgreSQL is the only supported runtime database. Cash delivery/pickup only. Fictional restaurants are private development records, not publicly operating businesses. No reviews, revenues or payments are fabricated.
 
 ## Windows launch (from project root)
 
@@ -13,6 +13,7 @@ $env:SECRET_KEY = '<at least 32 cryptographically random characters>'
 $env:PUBLIC_ORIGIN = 'http://localhost:3000'
 backend\.venv\Scripts\python -m alembic -c backend\alembic.ini upgrade head
 $env:PYTHONPATH = 'backend'
+# Optional private development accounts only; do not seed a live customer environment.
 backend\.venv\Scripts\python -m app.seed
 backend\.venv\Scripts\python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8086 --no-access-log
 ```
@@ -53,6 +54,21 @@ Order and reservation creation queue a separate notice to the restaurant contact
 ## Configurable website and enquiries
 
 Migration `0002_website_inquiries` adds restaurant `website_settings`, read-only `is_demo`, and the tenant-scoped contact inbox. Apply normal additive migrations before serving the new application; no seed/reset is required. Only known fictional slugs with an existing description containing “demonstration restaurant” are backfilled as demos; new fictional seeded restaurants set the flag explicitly.
+
+Restaurants marked `is_demo` are excluded from public listing counts and results,
+direct lookup/menu, quotes, checkout (including previous idempotent responses),
+reservation availability/creation, contact enquiries and public order tracking.
+They remain accessible through their authorised owner and platform administration
+APIs. Explicit publication returns 422; other private edits and unpublication
+remain supported, including for legacy seed records whose stored `published`
+flag is still true. Fresh seeds start unpublished. No migration, database reset,
+environment bypass or clearing of the marker is needed. Only approved real
+restaurant accounts should be configured for customers. This does not make
+public stock imagery or food/branding Blob URLs confidential.
+
+Existing real-restaurant tracking links and matching checkout retries continue
+to work after unpublication; hiding a website must not strand an already
+committed real order. New activity still requires an active published business.
 
 `PATCH /api/v1/restaurant` accepts `website_settings` as a validated **full replacement** with defaults, not a shallow merge. Restaurant responses expand missing settings to the complete defaults. Settings cover plain-text About/SEO/policy content, navy/emerald/terracotta themes, editorial/sans typography, optional gallery/FAQs, homepage section order and new-reservation availability. Gallery URLs accept HTTPS or bundled `/food/`/uploaded `/media/` paths. Gallery/FAQ navigation should appear only when enabled and nonempty. Setting `reservations_enabled` false blocks public availability and new reservations with `409 service_disabled`; existing capacity holds and owner status changes remain valid.
 

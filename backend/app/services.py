@@ -78,7 +78,7 @@ def public_restaurant(db, slug, lock=False):
     if lock:
         query = query.with_for_update()
     restaurant = db.scalar(query)
-    if not restaurant or not restaurant.published or restaurant.status != "active":
+    if not restaurant or restaurant.is_demo or not restaurant.published or restaurant.status != "active":
         fail(404, "Restaurant not found.")
     return restaurant
 
@@ -222,6 +222,8 @@ def enforce_cap(db, restaurant, adding=0):
 
 
 def publish_check(db, restaurant):
+    if restaurant.is_demo:
+        fail(422, "Private development restaurants cannot be published.")
     if not all((restaurant.name, restaurant.address, restaurant.city,
                 restaurant.phone, restaurant.email)):
         fail(422, "Publishing requires name, address, city, phone and email.")

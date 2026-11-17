@@ -21,7 +21,7 @@ router = APIRouter(prefix="/public", tags=["Guest storefront"])
 def restaurants(page_number: int = Query(1, alias="page", ge=1),
                 page_size: int = Query(20, ge=1, le=100), db=Depends(get_db)):
     return page(db, select(m.Restaurant).where(m.Restaurant.published.is_(True),
-                m.Restaurant.status == "active").order_by(m.Restaurant.name),
+                m.Restaurant.status == "active", m.Restaurant.is_demo.is_(False)).order_by(m.Restaurant.name),
                 page_number, page_size)
 
 
@@ -62,7 +62,7 @@ def create_order(slug: str, data: s.OrderInput, request: Request,
                  db=Depends(get_db)):
     # The same tenant lock serializes checkout, menu changes, suspension and reservations.
     tenant = db.scalar(select(m.Restaurant).where(m.Restaurant.slug == slug).with_for_update())
-    if not tenant:
+    if not tenant or tenant.is_demo:
         fail(404, "Restaurant not found.")
     payload_hash = digest(canonical(data.model_dump(mode="json")))
     previous = db.scalar(select(m.Order).where(m.Order.restaurant_id == tenant.id,
@@ -110,7 +110,9 @@ def create_order(slug: str, data: s.OrderInput, request: Request,
 @router.get("/orders/{tracking_token}")
 def tracking(tracking_token: str, request: Request, db=Depends(get_db)):
     rate(request, "tracking", 120)
-    order = db.scalar(select(m.Order).where(m.Order.tracking_hash == digest(tracking_token)))
+    order = db.scalar(select(m.Order).join(
+        m.Restaurant, m.Order.restaurant_id == m.Restaurant.id).where(
+        m.Order.tracking_hash == digest(tracking_token), m.Restaurant.is_demo.is_(False)))
     if not order:
         fail(404, "Order not found.")
     return order_view(order, public=True)

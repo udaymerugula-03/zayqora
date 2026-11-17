@@ -32,7 +32,7 @@ def get_restaurant(user=Depends(owner), db=Depends(get_db)):
 def update_restaurant(data: s.RestaurantPatch, user=Depends(owner), db=Depends(get_db)):
     restaurant = restaurant_lock(db, user.restaurant_id)
     apply_patch(restaurant, data)
-    if restaurant.published:
+    if restaurant.published and (not restaurant.is_demo or "published" in data.model_fields_set):
         publish_check(db, restaurant)
     audit(db, user, "restaurant.updated", restaurant.id, details={"fields": sorted(data.model_fields_set)})
     db.commit()

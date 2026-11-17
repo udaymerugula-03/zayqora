@@ -1,13 +1,13 @@
 // Isolated contract fixtures for browser tests only; never imported by the application.
 import {createServer} from "node:http";
-const restaurant={id:"test-restaurant",slug:"saffron-table",name:"Saffron Table",tagline:"A little taste of togetherness.",description:"A demonstration of freshly prepared Pakistani classics, served with care.",cuisine:"Pakistani",city:"Lahore",address:"Demo address, Lahore",phone:"+923001234567",email:"demo@example.com",currency:"PKR",timezone:"Asia/Karachi",logo_url:"",hero_image_url:"/food/hero.jpg",published:true,status:"active",allow_pickup:true,allow_delivery:true,delivery_fee:"150.00",minimum_order:"0.00",tax_rate:"0.00",tax_inclusive:false,opening_hours:Object.fromEntries(["mon","tue","wed","thu","fri","sat","sun"].map(d=>[d,{open:"12:00",close:"23:00",closed:false}])),reservation_duration_minutes:90,reservation_buffer_minutes:15,reservation_days_ahead:30,plan_id:"test-plan"};
+const restaurant={id:"test-restaurant",slug:"saffron-table",name:"Saffron Table",tagline:"A little taste of togetherness.",description:"Freshly prepared Pakistani classics, served with care.",cuisine:"Pakistani",city:"Lahore",address:"Test address, Lahore",phone:"+923001234567",email:"restaurant@example.com",currency:"PKR",timezone:"Asia/Karachi",logo_url:"",hero_image_url:"/food/hero.jpg",published:true,status:"active",allow_pickup:true,allow_delivery:true,delivery_fee:"150.00",minimum_order:"0.00",tax_rate:"0.00",tax_inclusive:false,opening_hours:Object.fromEntries(["mon","tue","wed","thu","fri","sat","sun"].map(d=>[d,{open:"12:00",close:"23:00",closed:false}])),reservation_duration_minutes:90,reservation_buffer_minutes:15,reservation_days_ahead:30,plan_id:"test-plan"};
 const item={id:"test-item",category_id:"test-category",name:"Chicken Biryani",description:"Fragrant basmati rice with aromatic spices.",image_url:"/food/biryani.jpg",price:"600.00",available:true,published:true,featured:true,variant_required:true,variants:[{id:"regular",name:"Regular",price_delta:"0.00"},{id:"large",name:"Large",price_delta:"200.00"}],modifiers:[{id:"raita",name:"Raita",price_delta:"80.00"}]};
 const category={id:"test-category",name:"Signature dishes",position:0,published:true,items:[item]};
 const plan={id:"test-plan",name:"Starter",description:"A clear set of restaurant entitlements.",max_menu_items:30,active:true};
 const page=items=>({items,total:items.length,page:1,page_size:20});
 const user={id:"test-owner",email:"owner@example.com",full_name:"Demo Owner",role:"owner",restaurant_id:restaurant.id,email_verified:true};
 const websiteDefaults={about_text:"",seo_title:"",seo_description:"",theme:"navy",typography:"editorial",reservations_enabled:true,gallery_enabled:false,faqs_enabled:false,gallery:[],faqs:[],cancellation_policy:"",homepage_sections:["featured","about","hours"]};
-restaurant.is_demo=true;restaurant.website_settings=structuredClone(websiteDefaults);
+restaurant.is_demo=false;restaurant.website_settings=structuredClone(websiteDefaults);
 const originalRestaurant=structuredClone(restaurant);
 const inquiries=new Map();
 const quote=body=>{const items=body.items.map(l=>{const unit=Number(item.price)+(l.variant_id==="large"?200:0)+(l.modifier_ids.includes("raita")?80:0);return {menu_item_id:item.id,name:item.name,quantity:l.quantity,variant_name:l.variant_id==="large"?"Large":"Regular",modifier_names:l.modifier_ids.includes("raita")?["Raita"]:[],unit_price:unit.toFixed(2),line_total:(unit*l.quantity).toFixed(2),notes:l.notes};});const subtotal=items.reduce((sum,i)=>sum+Number(i.line_total),0);const delivery=body.fulfilment==="delivery"?150:0;return {items,subtotal:subtotal.toFixed(2),delivery_fee:delivery.toFixed(2),tax:"0.00",total:(subtotal+delivery).toFixed(2),currency:"PKR",quote_token:`fixture-signed-quote-${item.price}`};};
@@ -22,7 +22,8 @@ const server=createServer(async(req,res)=>{
   if(path==="/__test/reset"){item.price="600.00";orders.clear();inquiries.clear();Object.assign(restaurant,structuredClone(originalRestaurant));return respond({ok:true});}
   if(path==="/__test/restaurant"){Object.assign(restaurant,body);return respond(restaurant);}
   if(path==="/__test/price"){item.price="650.00";return respond({ok:true});}
-  if(path==="/public/restaurants")return respond(page([restaurant]));
+  if(path==="/public/restaurants")return respond(page(restaurant.published&&restaurant.status==="active"&&!restaurant.is_demo?[restaurant]:[]));
+  if((path.startsWith("/public/restaurants/saffron-table")||path==="/public/orders/test-private-token")&&(restaurant.is_demo||!restaurant.published||restaurant.status!=="active"))return respond({detail:"Restaurant not found."},404);
   if(path==="/public/restaurants/saffron-table")return restaurant.published?respond(restaurant):respond({detail:"Restaurant not found."},404);
   if(path==="/public/restaurants/saffron-table/menu")return respond({categories:[category]});
   if(path==="/public/restaurants/saffron-table/quote")return respond(quote(body));
