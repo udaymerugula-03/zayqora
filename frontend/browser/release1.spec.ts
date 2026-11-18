@@ -99,6 +99,19 @@ test("cash checkout requires current quote reconfirmation after a price change",
   await expect(page.getByText("unpaid",{exact:true})).toBeVisible();
   await expect(page.getByText(/No online payment has been taken/)).toBeVisible();
 });
+test("sample checkout retains its demonstration label through order tracking",async({page,request})=>{
+  await request.post("http://127.0.0.1:18117/__test/restaurant",{data:{is_demo:true}});
+  await addDish(page);
+  await page.goto("/r/saffron-table/checkout");
+  await expect(page.getByRole("note")).toContainText("Sample restaurant.");
+  await expect(page.getByText("Demonstration restaurant. This order will not result in real food delivery. Do not use sensitive personal details.",{exact:true})).toBeVisible();
+  await fillCheckout(page);
+  await page.getByRole("button",{name:"Place cash order →"}).click();
+  await expect(page).toHaveURL(/\/track\/test-private-token$/);
+  await expect(page.getByText(/Sample restaurant\. Explore the website/)).toBeVisible();
+  await expect(page.getByText("Demonstration only. No cash payment or restaurant service is required.",{exact:true})).toBeVisible();
+  await expect(page.getByText(/Pay in cash on pickup or delivery/)).toHaveCount(0);
+});
 test("unknown network result retries identical body and key across reload",async({page})=>{
   await addDish(page);await page.goto("/r/saffron-table/checkout");await fillCheckout(page);
   const requests:{key:string|null;body:string|null}[]=[];

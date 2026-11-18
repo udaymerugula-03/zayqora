@@ -21,10 +21,12 @@ test("ordering needs at least one enabled fulfilment service",()=>{
   assert.equal(canOrder({allow_pickup:true,allow_delivery:false}),true);
   assert.equal(canOrder({allow_pickup:false,allow_delivery:true}),true);
 });
-test("public visibility requires a real active published restaurant",()=>{
+test("public visibility requires an active published restaurant, including labelled samples",()=>{
   const restaurant={slug:"real-restaurant",is_demo:false,published:true,status:"active"};
   assert.equal(isPublicRestaurant(restaurant),true);
-  assert.equal(isPublicRestaurant({...restaurant,is_demo:true}),false);
+  assert.equal(isPublicRestaurant({...restaurant,is_demo:true}),true);
+  assert.equal(isPublicRestaurant({...restaurant,is_demo:true,published:false}),false);
+  assert.equal(isPublicRestaurant({...restaurant,is_demo:true,status:"suspended"}),false);
   assert.equal(isPublicRestaurant({...restaurant,published:false}),false);
   assert.equal(isPublicRestaurant({...restaurant,status:"suspended"}),false);
 });

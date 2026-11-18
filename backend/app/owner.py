@@ -32,7 +32,7 @@ def get_restaurant(user=Depends(owner), db=Depends(get_db)):
 def update_restaurant(data: s.RestaurantPatch, user=Depends(owner), db=Depends(get_db)):
     restaurant = restaurant_lock(db, user.restaurant_id)
     apply_patch(restaurant, data)
-    if restaurant.published and (not restaurant.is_demo or "published" in data.model_fields_set):
+    if restaurant.published:
         publish_check(db, restaurant)
     audit(db, user, "restaurant.updated", restaurant.id, details={"fields": sorted(data.model_fields_set)})
     db.commit()
@@ -125,12 +125,15 @@ def orders(page_number: int = Query(1, alias="page", ge=1),
         term = "%" + q[:100].replace("%", r"\%").replace("_", r"\_") + "%"
         query = query.where(or_(m.Order.reference.ilike(term, escape="\\"),
                                m.Order.customer_name.ilike(term, escape="\\")))
-    return page(db, query.order_by(m.Order.created_at.desc()), page_number, page_size, order_view)
+    restaurant = db.get(m.Restaurant, user.restaurant_id)
+    return page(db, query.order_by(m.Order.created_at.desc()), page_number, page_size,
+                lambda order: order_view(order, restaurant))
 
 
 @router.get("/orders/{order_id}")
 def get_order(order_id: str, user=Depends(owner), db=Depends(get_db)):
-    return order_view(scoped(db, m.Order, order_id, user.restaurant_id))
+    return order_view(scoped(db, m.Order, order_id, user.restaurant_id),
+                      db.get(m.Restaurant, user.restaurant_id))
 
 
 @router.patch("/orders/{order_id}/status")
@@ -160,7 +163,7 @@ def order_status(order_id: str, data: s.StatusInput, user=Depends(owner), db=Dep
           {"order_id": order.id, "from": previous, "to": data.status})
     queue_status_email(db, restaurant, order, "order_status")
     db.commit()
-    return order_view(order)
+    return order_view(order, restaurant)
 
 
 @router.post("/orders/{order_id}/cash-payment")
@@ -176,7 +179,7 @@ def cash_payment(order_id: str, user=Depends(owner), db=Depends(get_db)):
               {"order_id": order.id, "amount": money(order.total), "currency": order.currency})
         queue_status_email(db, restaurant, order, "cash_receipt")
     db.commit()
-    return order_view(order)
+    return order_view(order, restaurant)
 
 
 @router.get("/reservations")
@@ -299,7 +302,8 @@ def report(db, restaurant, from_date, to_date):
             "pending_orders": sum(order.status in {"PENDING", "CONFIRMED", "PREPARING", "READY",
                                                   "OUT_FOR_DELIVERY"} for order in orders),
             "average_order_value": money(gross / len(eligible) if eligible else Decimal("0")),
-            "upcoming_reservations": upcoming, "recent_orders": [order_view(order) for order in orders[:5]],
+            "upcoming_reservations": upcoming,
+            "recent_orders": [order_view(order, restaurant) for order in orders[:5]],
             "top_items": [{**item, "revenue": money(item["revenue"])} for item in top],
             "definitions": {
                 "gross_sales": "Total including tax and delivery, completed and cash-paid orders only.",

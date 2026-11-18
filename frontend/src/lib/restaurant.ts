@@ -1,13 +1,13 @@
 import {notFound} from "next/navigation";
 import type {Category, Restaurant} from "./types";
 import type {Metadata} from "next";
-import {isDemo, websiteSettings} from "./website";
+import {isDemo, isPublicRestaurant, websiteSettings} from "./website";
 export async function getRestaurant(slug:string):Promise<Restaurant>{
   const response=await fetch(`${process.env.API_ORIGIN||"http://127.0.0.1:8086"}/api/v1/public/restaurants/${encodeURIComponent(slug)}`,{cache:"no-store"});
   if(response.status===404)notFound();
   if(!response.ok)throw new Error("Restaurant service is currently unavailable. Please retry.");
   const restaurant:Restaurant=await response.json();
-  if(isDemo(restaurant))notFound();
+  if(!isPublicRestaurant(restaurant))notFound();
   return restaurant;
 }
 export async function getPublicMenu(slug:string):Promise<{categories:Category[]}> {

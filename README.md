@@ -152,14 +152,16 @@ information. The contact form saves an enquiry in the owner's inbox before
 acknowledging receipt. An acknowledgement does not mean an email was delivered
 or a booking/order was accepted.
 
-Saffron Table and Garden Cafe are private development seed data, not names
-mandated by the product specification. Restaurants with the read-only `is_demo`
-marker are excluded from public listings, direct website/API access and public
-ordering, booking, enquiry and tracking flows. Their records remain available
-to authorised owners and platform administrators. Owners cannot clear this
-marker or publish these records. Create a separate account with approved real
-business details instead of relabelling fictional data. An empty public
-directory is intentional until a real restaurant is configured and published.
+Saffron Table and Garden Cafe are fictional sample restaurants, not names
+mandated by the product specification. With client approval, active published
+samples appear publicly with explicit "Sample restaurant" labels and notices
+that orders and reservations do not provide real food, delivery or dining.
+Their normal menu, cash-order, booking and enquiry flows can be demonstrated
+using test details. The read-only `is_demo` marker must not be cleared or used
+to present fictional businesses as real. Unpublished or suspended restaurants
+remain unavailable for new public activity. Sample websites are excluded from
+the sitemap and marked noindex. Configure separate accounts with approved
+business details before offering genuine restaurant services.
 
 ## Development checks
 
@@ -172,12 +174,12 @@ npm.cmd run test:e2e
 ```
 
 Browser workflows require the running API/frontend and an installed Google
-Chrome browser. Private seeded accounts support workspace and public-exclusion
-checks. Public order/reservation workflows require an explicitly configured
+Chrome browser. Seeded accounts support workspace and labelled-sample
+checks. Mutating public order/reservation workflows require an explicitly configured
 restaurant in an isolated test environment: set `E2E_PUBLIC_RESTAURANT_SLUG`,
 `E2E_PUBLIC_OWNER_EMAIL` and its entry in `E2E_CREDENTIALS_FILE`. Without these,
-those two mutating flows are explicitly skipped; private seed tenants are not
-relabelled or republished. Never target a real restaurant database. Use
+those two mutating flows are explicitly skipped. Never target a real restaurant
+database or create fictitious commercial revenue. Use
 `E2E_BASE_URL` to select the isolated environment. The backend guide explains
 `TEST_DATABASE_URL` and its disposable PostgreSQL schemas. Isolated frontend
 browser fixtures cover public screens without publishing test businesses.
@@ -230,3 +232,6 @@ sanitized capture manifest are in `docs\release1-client-guide-assets`.
 Passwords and private tracking links are intentionally excluded. The guide
 separates implemented functionality, outstanding operational launch conditions
 and later-release scope. Earlier reports are retained as historical snapshots.
+The 17 November guide predates the client's 18 November approval to restore
+clearly labelled public sample restaurants; its private-sample policy is
+superseded by the current policy above.

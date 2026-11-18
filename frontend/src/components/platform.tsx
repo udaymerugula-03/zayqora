@@ -36,7 +36,7 @@ export function Tenants(){
         <thead><tr><th>Restaurant</th><th>Status</th><th>Public site</th><th>Plan ID</th><th>Actions</th></tr></thead>
         <tbody>{q.data.items.map(r=><tr key={r.id}>
           <td><strong>{r.name}</strong><small>{r.slug} · {r.city}</small></td>
-          <td><Badge>{r.status}</Badge></td><td>{isDemo(r)?"Private development data":r.published?"Published":"Draft"}</td><td>{r.plan_id||"Unassigned"}</td>
+          <td><Badge>{r.status}</Badge></td><td>{r.published?"Published":"Draft"}{isDemo(r)?" · Sample restaurant":""}</td><td>{r.plan_id||"Unassigned"}</td>
           <td><div className="actions wrap"><button className="secondary small" onClick={()=>setSelected({restaurant:r,kind:"status"})}>Change status</button><button className="secondary small" onClick={()=>setSelected({restaurant:r,kind:"plan"})}>Assign plan</button></div></td>
         </tr>)}</tbody>
       </table></div>:<Empty>No restaurants match your search.</Empty>}

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type {Category, Restaurant} from "@/lib/types";
 import {money} from "@/lib/commerce";
-import {canOrder, isDemo, websiteSettings} from "@/lib/website";
+import {canOrder, isDemo, SAMPLE_RESTAURANT_NOTICE, websiteSettings} from "@/lib/website";
 
 export function RestaurantHours({restaurant:r}: {restaurant:Restaurant}) {
   return <section className="restaurant-hours"><h2>Opening hours</h2><p className="muted">All times {r.timezone}</p>{["mon","tue","wed","thu","fri","sat","sun"].map(day=>{
@@ -20,7 +20,7 @@ export function RestaurantHomeContent({restaurant:r,categories=[],preview=false}
   const featured=publishedItems.filter(item=>item.featured);
   const items=(featured.length?featured:publishedItems).slice(0,3);
   return <>
-    {isDemo(r)&&<div className="container"><p className="notice">Private development content. This restaurant is not available for public orders or bookings.</p></div>}
+    {preview&&isDemo(r)&&<div className="container"><p className="notice">{SAMPLE_RESTAURANT_NOTICE}</p></div>}
     <section className="restaurant-editorial container">
       <div className="restaurant-introduction"><span className="eyebrow">{[r.cuisine,r.city].filter(Boolean).join(" · ")}</span>{preview?<h3 className="preview-hero-heading">{r.name}</h3>:<h1>{r.name}</h1>}{r.tagline&&<p className="restaurant-tagline">{r.tagline}</p>}<p className="preserve-lines">{r.description}</p>
         {!preview&&<div className="actions"><Link className="button" href={`${base}/menu`}>{canOrder(r)?"Order online":"Explore the menu"} ↗</Link>{settings.reservations_enabled&&<Link className="text-link" href={`${base}/reservations`}>Reserve a table →</Link>}</div>}

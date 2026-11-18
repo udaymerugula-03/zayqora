@@ -31,7 +31,7 @@ test("guest cash order reaches paid completion through the owner workspace", asy
   page,
 }, testInfo) => {
   test.setTimeout(180_000);
-  test.skip(!publicRestaurantSlug || !publicOwnerEmail, "Public flows need an explicitly configured isolated test restaurant and owner; private seed tenants must not be published.");
+  test.skip(!publicRestaurantSlug || !publicOwnerEmail, "Mutating public flows need an explicitly configured isolated test restaurant and owner.");
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("homepage.png"), fullPage: true });
@@ -123,16 +123,21 @@ test("live workspace pages retain branding and load their actual API data", asyn
   }
 });
 
-test("private seed restaurants are unavailable to public visitors", async ({page,request}) => {
+test("published sample restaurants are available with clear demonstration labels", async ({page,request}) => {
   const response = await request.get("/api/v1/public/restaurants");
   expect(response.status()).toBe(200);
   const listing = await response.json();
-  expect(listing.items.every((restaurant:{is_demo:boolean}) => !restaurant.is_demo)).toBe(true);
   for (const slug of ["saffron-table","garden-cafe"]) {
+    expect(listing.items).toEqual(expect.arrayContaining([expect.objectContaining({slug,is_demo:true})]));
     const detail = await request.get(`/api/v1/public/restaurants/${slug}`);
-    expect(detail.status()).toBe(404);
+    expect(detail.status()).toBe(200);
     await page.goto(`/r/${slug}`);
-    await expect(page.getByRole("heading",{name:"Page not available",exact:true})).toBeVisible();
+    await expect(page.getByRole("note")).toContainText("Sample restaurant.");
+    await expect(page.getByRole("note")).toContainText("no real food, delivery or table booking is provided");
+    await page.goto(`/r/${slug}/menu`);
+    await expect(page.getByRole("button",{name:"Customise +"}).first()).toBeEnabled();
+    await page.goto(`/r/${slug}/reservations`);
+    await expect(page.getByRole("note")).toContainText("Sample restaurant.");
   }
 });
 
@@ -140,7 +145,7 @@ test("a guest reservation request appears in the owner queue and can be resolved
   page,
 }, testInfo) => {
   test.setTimeout(120_000);
-  test.skip(!publicRestaurantSlug || !publicOwnerEmail, "Public flows need an explicitly configured isolated test restaurant and owner; private seed tenants must not be published.");
+  test.skip(!publicRestaurantSlug || !publicOwnerEmail, "Mutating public flows need an explicitly configured isolated test restaurant and owner.");
   const tomorrow = new Date(Date.now() + 86_400_000);
   const date = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Karachi", year: "numeric", month: "2-digit", day: "2-digit",

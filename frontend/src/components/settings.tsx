@@ -23,7 +23,7 @@ function SettingsForm({value:r}:{value:Restaurant}){
   const [logo,setLogo]=useState(r.logo_url||"");
   const [hero,setHero]=useState(r.hero_image_url||"");
   const [hours,setHours]=useState(r.opening_hours||{});
-  const [published,setPublished]=useState(r.published&&!isDemo(r));
+  const [published,setPublished]=useState(r.published);
   async function save(e:React.FormEvent<HTMLFormElement>){
     e.preventDefault();
     const f=new FormData(e.currentTarget);
@@ -100,8 +100,8 @@ function SettingsForm({value:r}:{value:Restaurant}){
       <h2>Publish your restaurant</h2>
       <p>The server checks your setup before publishing. Suspended restaurants cannot accept public orders or reservations.</p>
       <p>Platform status: <Badge>{r.status}</Badge></p>
-      {isDemo(r)&&<Notice>This workspace contains private development data. It cannot be made public. Register a separate restaurant account with approved business information for customer service.</Notice>}
-      <label className="choice"><input type="checkbox" checked={published} disabled={isDemo(r)} onChange={e=>setPublished(e.target.checked)}/>Publish restaurant website</label>
+      {isDemo(r)&&<Notice>This is a sample restaurant. Publishing enables labelled demonstration orders and reservations, not real restaurant service. Keep sample details fictional and use test information only.</Notice>}
+      <label className="choice"><input type="checkbox" checked={published} onChange={e=>setPublished(e.target.checked)}/>Publish restaurant website</label>
       <ActionMessages action={action}/><button disabled={action.busy}>{action.busy?"Saving restaurant…":"Save restaurant settings"}</button>
     </section>
   </form></div>;

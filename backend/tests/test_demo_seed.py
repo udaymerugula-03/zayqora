@@ -22,12 +22,18 @@ def test_demo_seed_uses_simple_emails_and_preserves_existing_credentials(databas
         restaurant = db.get(m.Restaurant, owner.restaurant_id)
         assert restaurant.slug == "saffron-table"
         assert restaurant.is_demo is True
-        assert restaurant.published is False
+        assert restaurant.published is True
+        assert "Sample restaurant" in restaurant.tagline
+        assert "Sample restaurant" in restaurant.description
         assert restaurant.currency == "PKR" and restaurant.timezone == "Asia/Karachi"
         assert passwords.verify(owner.password_hash, generated[owner.email]["password"])
         owner.password_hash = passwords.hash(secrets.token_urlsafe(24))
         retained_hash = owner.password_hash
         retained_id = owner.id
+        restaurant.published = False
+        restaurant.tagline = "Owner-edited sample content"
+        restaurant.website_settings = {"theme": "emerald"}
+        restaurant.status = "suspended"
         db.commit()
         assert seed(db) == {}
         db.commit()
@@ -35,3 +41,10 @@ def test_demo_seed_uses_simple_emails_and_preserves_existing_credentials(databas
         assert db.scalar(select(func.count()).select_from(m.User)) == 3
         assert db.scalar(select(func.count()).select_from(m.Restaurant)) == 2
         assert all(tenant.is_demo for tenant in db.scalars(select(m.Restaurant)))
+        db.refresh(restaurant)
+        assert restaurant.published is False and restaurant.status == "suspended"
+        assert restaurant.tagline == "Owner-edited sample content"
+        assert restaurant.website_settings == {"theme": "emerald"}
+        garden = db.scalar(select(m.Restaurant).where(m.Restaurant.slug == "garden-cafe"))
+        assert garden.is_demo is True and garden.published is True
+        assert "Sample restaurant" in garden.tagline

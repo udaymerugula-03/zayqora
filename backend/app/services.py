@@ -53,11 +53,12 @@ def user_view(user):
             ("id", "email", "full_name", "role", "restaurant_id", "email_verified")}
 
 
-def order_view(order, public=False):
+def order_view(order, restaurant, public=False):
     excluded = {"tracking_hash", "idempotency_key", "payload_hash", "creation_response"}
     if public:
         excluded |= {"customer_name", "email", "phone", "address", "notes"}
     result = serialize(order, excluded)
+    result["is_demo"] = restaurant.is_demo
     if public:
         result["items"] = [{**item, "notes": ""} for item in order.items]
         result["history"] = [{"status": event["status"], "created_at": event["created_at"],
@@ -78,7 +79,7 @@ def public_restaurant(db, slug, lock=False):
     if lock:
         query = query.with_for_update()
     restaurant = db.scalar(query)
-    if not restaurant or restaurant.is_demo or not restaurant.published or restaurant.status != "active":
+    if not restaurant or not restaurant.published or restaurant.status != "active":
         fail(404, "Restaurant not found.")
     return restaurant
 
@@ -222,8 +223,6 @@ def enforce_cap(db, restaurant, adding=0):
 
 
 def publish_check(db, restaurant):
-    if restaurant.is_demo:
-        fail(422, "Private development restaurants cannot be published.")
     if not all((restaurant.name, restaurant.address, restaurant.city,
                 restaurant.phone, restaurant.email)):
         fail(422, "Publishing requires name, address, city, phone and email.")

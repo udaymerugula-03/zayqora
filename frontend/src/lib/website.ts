@@ -14,8 +14,10 @@ export function isDemo(restaurant: Pick<Restaurant, "is_demo" | "slug">): boolea
   return restaurant.is_demo ?? ["saffron-table", "garden-cafe"].includes(restaurant.slug);
 }
 
+export const SAMPLE_RESTAURANT_NOTICE = "Sample restaurant. Explore the website using test details only. Orders and reservations are demonstrations: no real food, delivery or table booking is provided.";
+
 export function isPublicRestaurant(restaurant: Pick<Restaurant,"is_demo"|"slug"|"published"|"status">): boolean {
-  return restaurant.published && restaurant.status==="active" && !isDemo(restaurant);
+  return restaurant.published && restaurant.status==="active";
 }
 
 export function canOrder(restaurant: Pick<Restaurant, "allow_delivery" | "allow_pickup">): boolean {

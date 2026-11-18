@@ -21,7 +21,7 @@ router = APIRouter(prefix="/public", tags=["Guest storefront"])
 def restaurants(page_number: int = Query(1, alias="page", ge=1),
                 page_size: int = Query(20, ge=1, le=100), db=Depends(get_db)):
     return page(db, select(m.Restaurant).where(m.Restaurant.published.is_(True),
-                m.Restaurant.status == "active", m.Restaurant.is_demo.is_(False)).order_by(m.Restaurant.name),
+                m.Restaurant.status == "active").order_by(m.Restaurant.name),
                 page_number, page_size)
 
 
@@ -62,7 +62,7 @@ def create_order(slug: str, data: s.OrderInput, request: Request,
                  db=Depends(get_db)):
     # The same tenant lock serializes checkout, menu changes, suspension and reservations.
     tenant = db.scalar(select(m.Restaurant).where(m.Restaurant.slug == slug).with_for_update())
-    if not tenant or tenant.is_demo:
+    if not tenant:
         fail(404, "Restaurant not found.")
     payload_hash = digest(canonical(data.model_dump(mode="json")))
     previous = db.scalar(select(m.Order).where(m.Order.restaurant_id == tenant.id,
@@ -71,7 +71,7 @@ def create_order(slug: str, data: s.OrderInput, request: Request,
         if previous.payload_hash != payload_hash:
             fail(409, "Idempotency key was already used with a different payload.",
                  "idempotency_conflict")
-        return previous.creation_response
+        return {**previous.creation_response, "is_demo": tenant.is_demo}
     rate(request, "checkout", 20)
     public_restaurant(db, slug)
     config = request.app.state.config
@@ -91,7 +91,7 @@ def create_order(slug: str, data: s.OrderInput, request: Request,
     )
     db.add(order)
     db.flush()
-    response = {**order_view(order), "tracking_token": tracking}
+    response = {**order_view(order, tenant), "tracking_token": tracking}
     order.creation_response = response
     queue_email(db, tenant, "order", data.email,
                 f"{tenant.name}: order {order.reference}",
@@ -110,12 +110,13 @@ def create_order(slug: str, data: s.OrderInput, request: Request,
 @router.get("/orders/{tracking_token}")
 def tracking(tracking_token: str, request: Request, db=Depends(get_db)):
     rate(request, "tracking", 120)
-    order = db.scalar(select(m.Order).join(
+    record = db.execute(select(m.Order, m.Restaurant).join(
         m.Restaurant, m.Order.restaurant_id == m.Restaurant.id).where(
-        m.Order.tracking_hash == digest(tracking_token), m.Restaurant.is_demo.is_(False)))
-    if not order:
+        m.Order.tracking_hash == digest(tracking_token))).first()
+    if not record:
         fail(404, "Order not found.")
-    return order_view(order, public=True)
+    order, tenant = record
+    return order_view(order, tenant, public=True)
 
 
 @router.get("/restaurants/{slug}/availability")

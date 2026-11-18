@@ -18,8 +18,7 @@ def overview(db=Depends(get_db)):
             "active_tenants": count(m.Restaurant, m.Restaurant.status == "active"),
             "suspended_tenants": count(m.Restaurant, m.Restaurant.status == "suspended"),
             "published_restaurants": count(m.Restaurant, m.Restaurant.published.is_(True),
-                                           m.Restaurant.status == "active",
-                                           m.Restaurant.is_demo.is_(False)),
+                                           m.Restaurant.status == "active"),
             "total_orders": count(m.Order)}
 
 

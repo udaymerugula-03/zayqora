@@ -13,6 +13,7 @@ from . import models as m
 from .config import ROOT, settings
 from .db import make_engine
 from .security import passwords
+from .services import publish_check
 
 
 def seed(db):
@@ -31,8 +32,8 @@ def seed(db):
             raise RuntimeError("Refusing to attach demo accounts to an existing non-demo restaurant.")
         if not restaurant:
             restaurant = m.Restaurant(
-                slug=slug, name=name, tagline="A ZAYQORA demonstration restaurant",
-                description="Demonstration restaurant and menu, not a claim of a real operating business.",
+                slug=slug, name=name, tagline="Sample restaurant — a ZAYQORA demonstration",
+                description="Sample restaurant. Demonstration restaurant and menu, not a claim of a real operating business.",
                 city="Karachi", address="Demonstration address, Karachi, Pakistan",
                 phone="+92 300 0000000", email=email, published=False, is_demo=True,
                 allow_delivery=True, delivery_fee="150.00", minimum_order="0.00",
@@ -60,6 +61,9 @@ def seed(db):
                     modifiers=[{"id": m.uid(), "name": "Extra sauce", "price_delta": "50.00"}]))
             for number, capacity in ((1, 2), (2, 4), (3, 6)):
                 db.add(m.DiningTable(restaurant_id=restaurant.id, name=f"Table {number}", capacity=capacity))
+            db.flush()
+            publish_check(db, restaurant)
+            restaurant.published = True
         if not db.scalar(select(m.User).where(m.User.email == email)):
             password = secrets.token_urlsafe(24)
             db.add(m.User(email=email, full_name=f"{name} Demo Owner", restaurant_id=restaurant.id,

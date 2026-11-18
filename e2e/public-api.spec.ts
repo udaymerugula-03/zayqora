@@ -4,7 +4,7 @@ const publicRestaurantSlug = process.env.E2E_PUBLIC_RESTAURANT_SLUG;
 const restaurantPath = `/api/v1/public/restaurants/${encodeURIComponent(publicRestaurantSlug ?? "unavailable-restaurant")}`;
 
 test.describe("Public restaurant contract", () => {
-  test("lists only public restaurants and hides private development restaurants", async ({ request }) => {
+  test("lists active published restaurants including clearly marked samples", async ({ request }) => {
     const listing = await request.get("/api/v1/public/restaurants");
     expect(listing.ok()).toBeTruthy();
     expect(await listing.json()).toMatchObject({
@@ -15,17 +15,18 @@ test.describe("Public restaurant contract", () => {
       expect(restaurant).toMatchObject({
         currency: "PKR",
         published: true,
-        is_demo: false,
+        is_demo: expect.any(Boolean),
       });
     }
     for (const slug of ["saffron-table", "garden-cafe"]) {
       const response = await request.get(`/api/v1/public/restaurants/${slug}`);
-      expect(response.status()).toBe(404);
+      expect(response.status()).toBe(200);
+      expect(await response.json()).toMatchObject({slug,is_demo:true,published:true,status:"active"});
     }
   });
 
   test("quotes menu selections using server prices", async ({ request }) => {
-    test.skip(!publicRestaurantSlug, "Public quote flows need an explicitly configured isolated test restaurant; private seed tenants must not be published.");
+    test.skip(!publicRestaurantSlug, "Public quote flows need an explicitly configured isolated test restaurant.");
     const response = await request.get(`${restaurantPath}/menu`);
     expect(response.ok()).toBeTruthy();
     const menu = await response.json();

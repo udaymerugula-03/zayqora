@@ -12,7 +12,7 @@
     "payments": "Cash only. Public checkout never marks payment paid. Owner records cash receipt explicitly.",
     "images": "Bundled /food/*.jpg URLs; uploaded /media/* paths resolved against API origin",
     "scope": "Release 1 plus owner-operated basic order board, not the Release 2 staff/KDS/POS suite",
-    "public_visibility": "Only active, published restaurants with is_demo=false are publicly listed or available for new guest activity. Fictional tenants also return 404 for direct lookup, tracking and checkout replays; their records remain privately manageable."
+    "public_visibility": "Active published restaurants, including clearly labelled fictional samples with read-only is_demo=true, are publicly listed and support new guest activity. Samples provide demonstrations only, not real food, delivery or dining. Unpublished or suspended restaurants reject new public activity."
   },
   "entities": {
     "User": ["id", "email", "full_name", "role", "restaurant_id|null", "email_verified"],
@@ -36,7 +36,7 @@
     "MenuItem": ["id", "category_id", "name", "description", "image_url", "price", "available", "published", "featured", "variant_required", "variants:[{id,name,price_delta}]", "modifiers:[{id,name,price_delta}]"],
     "CartLineInput": ["menu_item_id", "quantity", "variant_id|null", "modifier_ids:string[]", "notes"],
     "Quote": ["items:[{menu_item_id,name,quantity,variant_name|null,modifier_names:string[],unit_price,line_total,notes}]", "subtotal", "delivery_fee", "tax", "total", "currency", "quote_token"],
-    "Order": ["id", "reference", "tracking_token:only-on-creation", "status", "payment_status:unpaid|paid", "payment_method:cash", "fulfilment:pickup|delivery", "customer_name:staff-only", "email:staff-only", "phone:staff-only", "address:staff-only", "notes", "items:Quote.items", "subtotal", "delivery_fee", "tax", "total", "currency", "created_at", "history:[{status,created_at,reason}]"],
+    "Order": ["id", "reference", "tracking_token:only-on-creation", "is_demo:boolean:read-only", "status", "payment_status:unpaid|paid", "payment_method:cash", "fulfilment:pickup|delivery", "customer_name:staff-only", "email:staff-only", "phone:staff-only", "address:staff-only", "notes", "items:Quote.items", "subtotal", "delivery_fee", "tax", "total", "currency", "created_at", "history:[{status,created_at,reason}]"],
     "Reservation": ["id", "reference", "status", "starts_at", "ends_at", "party_size", "customer_name", "email", "phone", "notes", "table_id"],
     "DiningTable": ["id", "name", "capacity", "active"],
     "Dashboard": ["orders_today", "gross_sales", "net_sales", "pending_orders", "average_order_value", "upcoming_reservations", "recent_orders:Order[]", "top_items:[{name,quantity,revenue}]", "definitions:Record<string,string>"],
@@ -60,7 +60,7 @@
     ["POST", "/public/restaurants/{slug}/reservations", "{starts_at,party_size,customer_name,email,phone,notes,consent:true}", "Reservation"],
     ["POST", "/public/restaurants/{slug}/inquiries", "{customer_name:string min1 max150,email:EmailStr max254,subject:single-line string min1 max160 (no embedded CR/LF),message:string min10 max5000,consent:true}; strings trimmed; published active tenant only", "{reference,status:'received',notification_status:'queued'|'provider_not_configured'}; 201; no private data"],
     ["GET", "/restaurant", "", "Restaurant (owner)"],
-    ["PATCH", "/restaurant", "Editable Restaurant fields; website_settings:WebsiteSettings is full replacement with defaults, never null; is_demo is read-only; published validates setup and rejects private development tenants with 422; their other private edits remain supported", "Restaurant"],
+    ["PATCH", "/restaurant", "Editable Restaurant fields; website_settings:WebsiteSettings is full replacement with defaults, never null; is_demo is read-only; publication validates account and restaurant readiness for real and sample tenants alike", "Restaurant"],
     ["GET", "/menu/categories", "", "{items:Category[]}"],
     ["POST", "/menu/categories", "{name,position,published}", "Category"],
     ["PATCH", "/menu/categories/{id}", "{name?,position?,published?}", "Category"],
@@ -116,9 +116,9 @@
     "Reservations allocate a suitable table with transaction-safe overlap and buffer checks; REQUESTED also holds capacity. Disabled website_settings.reservations_enabled rejects availability and new bookings with 409 service_disabled, preserving existing holds and owner status changes.",
     "Incoming orders/reservations and inquiries enqueue owner email when restaurant email exists. Customer order/reservation status and explicit cash receipt enqueue transactionally only when customer email exists. No private tracking tokens or internal reasons appear in owner/status notices. Unconfigured SMTP never means sent; generic outbox worker supports all kinds.",
     "Suspended/unpublished restaurants are not public and cannot accept orders/reservations.",
-    "Existing real-restaurant tracking and matching idempotent checkout retries remain available after unpublication; the is_demo exclusion is applied before replay. Platform published_restaurants excludes private development tenants.",
+    "Existing tracking and matching idempotent checkout retries remain available after unpublication, including sample orders. Order responses identify sample restaurants with read-only is_demo. Platform published_restaurants includes all active published tenants, including samples.",
     "Cash payment recording must be explicit, auditable and duplicate-safe.",
     "Status colors are semantic; one ZAYQORA logo, typography, navy/teal theme shared across every interface.",
-    "Fictional seeded restaurants retain their read-only is_demo marker and are not public. Controlled test screenshots must be identified as test data; never relabel fictional records as real businesses or claim payment, email, GPS, certifications or production readiness that are not configured."
+    "Fictional seeded restaurants retain their read-only is_demo marker and display explicit Sample restaurant labels and no-real-service notices when published. Controlled test screenshots must be identified as test data; never relabel fictional records as real businesses or claim payment, email, GPS, certifications or production readiness that are not configured."
   ]
 }

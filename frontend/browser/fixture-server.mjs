@@ -22,8 +22,8 @@ const server=createServer(async(req,res)=>{
   if(path==="/__test/reset"){item.price="600.00";orders.clear();inquiries.clear();Object.assign(restaurant,structuredClone(originalRestaurant));return respond({ok:true});}
   if(path==="/__test/restaurant"){Object.assign(restaurant,body);return respond(restaurant);}
   if(path==="/__test/price"){item.price="650.00";return respond({ok:true});}
-  if(path==="/public/restaurants")return respond(page(restaurant.published&&restaurant.status==="active"&&!restaurant.is_demo?[restaurant]:[]));
-  if((path.startsWith("/public/restaurants/saffron-table")||path==="/public/orders/test-private-token")&&(restaurant.is_demo||!restaurant.published||restaurant.status!=="active"))return respond({detail:"Restaurant not found."},404);
+  if(path==="/public/restaurants")return respond(page(restaurant.published&&restaurant.status==="active"?[restaurant]:[]));
+  if(path.startsWith("/public/restaurants/saffron-table")&&(!restaurant.published||restaurant.status!=="active"))return respond({detail:"Restaurant not found."},404);
   if(path==="/public/restaurants/saffron-table")return restaurant.published?respond(restaurant):respond({detail:"Restaurant not found."},404);
   if(path==="/public/restaurants/saffron-table/menu")return respond({categories:[category]});
   if(path==="/public/restaurants/saffron-table/quote")return respond(quote(body));
@@ -32,10 +32,10 @@ const server=createServer(async(req,res)=>{
     if(orders.has(key))return respond(orders.get(key));
     if(body.quote_token!==`fixture-signed-quote-${item.price}`)return respond({detail:"Cart or prices changed. Request and explicitly confirm a new quote.",code:"quote_changed"},409);
     if(body.payment_status||body.payment_method)return respond({detail:"No payment state is accepted at public checkout."},422);
-    const order={...quote(body),id:"test-order",reference:"ZQ-TEST",tracking_token:"test-private-token",status:"PENDING",payment_status:"unpaid",payment_method:"cash",fulfilment:body.fulfilment,created_at:new Date().toISOString(),history:[{status:"PENDING",created_at:new Date().toISOString(),reason:""}]};
+    const order={...quote(body),id:"test-order",reference:"ZQ-TEST",tracking_token:"test-private-token",is_demo:restaurant.is_demo,status:"PENDING",payment_status:"unpaid",payment_method:"cash",fulfilment:body.fulfilment,created_at:new Date().toISOString(),history:[{status:"PENDING",created_at:new Date().toISOString(),reason:""}]};
     orders.set(key,order);return respond(order,201);
   }
-  if(path==="/public/orders/test-private-token")return respond([...orders.values()][0]||{...quote({items:[],fulfilment:"pickup"}),id:"test-order",reference:"ZQ-TEST",status:"PENDING",payment_status:"unpaid",payment_method:"cash",fulfilment:"pickup",created_at:new Date().toISOString(),history:[]});
+  if(path==="/public/orders/test-private-token")return respond([...orders.values()][0]||{...quote({items:[],fulfilment:"pickup"}),id:"test-order",reference:"ZQ-TEST",is_demo:restaurant.is_demo,status:"PENDING",payment_status:"unpaid",payment_method:"cash",fulfilment:"pickup",created_at:new Date().toISOString(),history:[]});
   if(path==="/public/plans"||path==="/platform/plans")return respond({items:[plan]});
   if(path==="/auth/login")return respond({access_token:body.email==="admin@example.com"?"test-admin":"test-owner",token_type:"bearer",user:body.email==="admin@example.com"?{...user,role:"platform_admin",restaurant_id:null}:user});
   if(path==="/auth/me")return req.headers.authorization?respond(req.headers.authorization.includes("test-admin")?{...user,role:"platform_admin",restaurant_id:null}:user):respond({detail:"Sign in required"},401);

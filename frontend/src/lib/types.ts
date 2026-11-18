@@ -22,7 +22,7 @@ export interface Category { id: string; name: string; position: number; publishe
 export interface CartLine { menu_item_id: string; quantity: number; variant_id: string | null; modifier_ids: string[]; notes: string }
 export interface LocalLine extends CartLine { name: string; image_url: string }
 export interface Quote { items: {menu_item_id: string; name: string; quantity: number; variant_name: string | null; modifier_names: string[]; unit_price: Money; line_total: Money; notes: string}[]; subtotal: Money; delivery_fee: Money; tax: Money; total: Money; currency: string; quote_token: string }
-export interface Order extends Quote { id: string; reference: string; tracking_token?: string; status: string; payment_status: string; payment_method: string; fulfilment: string; customer_name?: string; email?: string; phone?: string; address?: string; notes?: string; created_at: string; history: {status: string; created_at: string; reason?: string}[] }
+export interface Order extends Quote { id: string; reference: string; tracking_token?: string; is_demo?: boolean; status: string; payment_status: string; payment_method: string; fulfilment: string; customer_name?: string; email?: string; phone?: string; address?: string; notes?: string; created_at: string; history: {status: string; created_at: string; reason?: string}[] }
 export interface Reservation { id: string; reference: string; status: string; starts_at: string; ends_at: string; party_size: number; customer_name: string; email: string; phone: string; notes: string; table_id: string }
 export interface Table { id: string; name: string; capacity: number; active: boolean }
 export interface Plan { id: string; name: string; description: string; max_menu_items: number; active: boolean }
