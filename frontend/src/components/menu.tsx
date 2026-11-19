@@ -28,16 +28,16 @@ export function PublicMenu(){
     {added&&<Notice>{added} added to your bag. <Link href={`/r/${restaurant.slug}/cart`}>Review your bag →</Link></Notice>}
     {lines.length>=50&&<Notice>The bag supports up to 50 item selections. Review your bag before adding another.</Notice>}
     {q.isPending?<Loading/>:q.isError?<Notice error>{q.error.message}<button onClick={()=>q.refetch()}>Retry menu</button></Notice>:<div className="menu-catalogue">
-      <aside className="menu-category-rail"><span className="eyebrow">Find your flavour</span>
+      <aside className="menu-category-rail"><span className="eyebrow">Browse menu categories</span>
       <div className="category-tabs" role="group" aria-label="Menu category">
-        <button className={!category?"selected":""} aria-pressed={!category} onClick={()=>setCategory("")}>All dishes</button>
+        <button className={!category?"selected":""} aria-pressed={!category} onClick={()=>setCategory("")}>All food &amp; drinks</button>
         {q.data.categories.map(c=><button className={category===c.id?"selected":""} aria-pressed={category===c.id} key={c.id} onClick={()=>setCategory(c.id)}>{c.name}<span>{c.items.length}</span></button>)}
       </div>
       <div className="menu-dietary-note"><strong>A little consideration.</strong><p>Questions about ingredients or allergies? Please contact the restaurant before ordering.</p><Link href={`/r/${restaurant.slug}/contact`}>Get in touch ↗</Link></div></aside><div className="menu-results">
       {q.data.categories.filter(c=>!category||c.id===category).map(c=>{
         const items=c.items.filter(matches);
-        return items.length?<section className="menu-section" key={c.id}>
-          <div className="menu-category-heading"><h2>{c.name}</h2><span>{items.length} dish{items.length===1?"":"es"}</span></div><div className="menu-grid">{items.map(i=><article className={`menu-card ${!i.available?"sold-out":""}`} key={i.id}>
+        return items.length?<section className="menu-section" key={c.id} aria-label={`${c.name} menu`}>
+          <div className="menu-category-heading"><h2>{c.name}</h2><span>{items.length} item{items.length===1?"":"s"}</span></div><div className="menu-grid">{items.map(i=><article className={`menu-card ${!i.available?"sold-out":""}`} key={i.id}>
             <div className="menu-image"><img src={i.image_url||"/food/hero.jpg"} alt={i.name} loading="lazy"/>{i.featured&&<span className="image-label">Kitchen selection</span>}</div>
             <div className="card-body">
               <div className="row between"><h3>{i.name}</h3>{!i.available&&<span className="badge">Sold out</span>}</div>
@@ -47,7 +47,7 @@ export function PublicMenu(){
           </article>)}</div>
         </section>:null;
       })}
-      {!q.data.categories.some(c=>(!category||c.id===category)&&c.items.some(matches))&&<Empty>No dishes match. Try another category or search.</Empty>}
+      {!q.data.categories.some(c=>(!category||c.id===category)&&c.items.some(matches))&&<Empty>No menu items match. Try another category or search.</Empty>}
     </div></div>}
     {item&&<ItemDialog item={item} close={()=>setItem(null)} add={line=>{add(line);setAdded(item.name);setItem(null);}}/>}
     <p className="fine">Ingredient or allergy questions? Contact the restaurant before ordering. Menu images may be illustrative. Final totals are calculated by the restaurant service.</p>

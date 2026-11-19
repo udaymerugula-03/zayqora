@@ -45,6 +45,15 @@ def test_demo_seed_uses_simple_emails_and_preserves_existing_credentials(databas
         assert restaurant.published is False and restaurant.status == "suspended"
         assert restaurant.tagline == "Owner-edited sample content"
         assert restaurant.website_settings == {"theme": "emerald"}
+        for tenant in db.scalars(select(m.Restaurant)):
+            categories = {c.name: c for c in db.scalars(select(m.Category).where(m.Category.restaurant_id == tenant.id))}
+            assert set(categories) == {"Food", "Drinks"}
+            drinks = db.scalars(select(m.MenuItem).where(m.MenuItem.category_id == categories["Drinks"].id)).all()
+            assert {i.name for i in drinks} == {"Freshly Brewed Coffee"}
+            assert all(i.published and i.price for i in drinks)
+            assert drinks[0].modifiers[0]["name"] == "Extra shot"
+        assert db.scalar(select(func.count()).select_from(m.Category)) == 4
+        assert db.scalar(select(func.count()).select_from(m.MenuItem)) == 2 * 6
         garden = db.scalar(select(m.Restaurant).where(m.Restaurant.slug == "garden-cafe"))
         assert garden.is_demo is True and garden.published is True
         assert "Sample restaurant" in garden.tagline

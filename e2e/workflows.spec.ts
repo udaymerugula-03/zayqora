@@ -1,31 +1,8 @@
-import { readFileSync } from "node:fs";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import {signIn} from "./auth";
 
-type Credentials = Record<string, { password: string; role: string }>;
 const publicRestaurantSlug = process.env.E2E_PUBLIC_RESTAURANT_SLUG;
 const publicOwnerEmail = process.env.E2E_PUBLIC_OWNER_EMAIL;
-function credentials(): Credentials {
-  return JSON.parse(
-    readFileSync(process.env.E2E_CREDENTIALS_FILE ?? ".demo-credentials.json", "utf8"),
-  );
-}
-
-async function signIn(page: Page, email: string) {
-  await page.goto("/login");
-  await page.getByLabel("Email address").fill(email);
-  await page.getByLabel("Password", { exact: true }).fill(credentials()[email].password);
-  try {
-    await page.getByRole("button", { name: "Sign in →" }).click();
-  } finally {
-    await page.evaluate(() => {
-      const field = document.querySelector<HTMLInputElement>('input[type="password"]');
-      if (field) field.value = "";
-    });
-  }
-  await expect(page).toHaveURL(
-    credentials()[email].role === "platform_admin" ? /\/platform\/overview$/ : /\/app\/dashboard$/,
-  );
-}
 
 test("guest cash order reaches paid completion through the owner workspace", async ({
   page,

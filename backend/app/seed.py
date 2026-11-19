@@ -40,7 +40,7 @@ def seed(db):
                 plan_id=plan.id, tax_rate="0.00", opening_hours=m.hours())
             db.add(restaurant)
             db.flush()
-            category = m.Category(restaurant_id=restaurant.id, name="Demonstration menu",
+            category = m.Category(restaurant_id=restaurant.id, name="Food",
                                   position=0, published=True)
             db.add(category)
             db.flush()
@@ -50,7 +50,6 @@ def seed(db):
                 ("Beef Burger", "750.00", "burger"),
                 ("Margherita Pizza", "1100.00", "pizza"),
                 ("Chocolate Dessert", "400.00", "dessert"),
-                ("Freshly Brewed Coffee", "350.00", "drink"),
             ):
                 db.add(m.MenuItem(
                     restaurant_id=restaurant.id, category_id=category.id,
@@ -59,6 +58,15 @@ def seed(db):
                     featured=image in {"biryani", "karahi", "burger"},
                     variants=[{"id": m.uid(), "name": "Large", "price_delta": "200.00"}],
                     modifiers=[{"id": m.uid(), "name": "Extra sauce", "price_delta": "50.00"}]))
+            drinks = m.Category(restaurant_id=restaurant.id, name="Drinks", position=1, published=True)
+            db.add(drinks)
+            db.flush()
+            db.add(m.MenuItem(
+                restaurant_id=restaurant.id, category_id=drinks.id,
+                name="Freshly Brewed Coffee", description="Demonstration drink item",
+                price="350.00", image_url="/food/drink.jpg", published=True,
+                variants=[{"id": m.uid(), "name": "Large", "price_delta": "200.00"}],
+                modifiers=[{"id": m.uid(), "name": "Extra shot", "price_delta": "50.00"}]))
             for number, capacity in ((1, 2), (2, 4), (3, 6)):
                 db.add(m.DiningTable(restaurant_id=restaurant.id, name=f"Table {number}", capacity=capacity))
             db.flush()

@@ -3,6 +3,7 @@ import {Providers} from "@/components/providers";
 import "./globals.css";
 import "./redesign.css";
 import "./alignment.css";
+import "./readability.css";
 import "@fontsource/dm-sans/latin-400.css";
 import "@fontsource/dm-sans/latin-500.css";
 import "@fontsource/dm-sans/latin-600.css";

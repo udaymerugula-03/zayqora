@@ -163,6 +163,14 @@ remain unavailable for new public activity. Sample websites are excluded from
 the sitemap and marked noindex. Configure separate accounts with approved
 business details before offering genuine restaurant services.
 
+Owners can organise food and drinks using the existing menu categories; names
+remain customisable rather than fixed restaurant types. Published categories
+and available items appear on the customer's menu. The approved samples keep
+their food and coffee items under Food and Drinks without changing item prices.
+An unfinished cart stays in that customer's browser. Only successful checkout
+creates an order in the owner's Orders screen, which refreshes automatically
+and provides a manual Refresh orders action.
+
 ## Development checks
 
 ```powershell
@@ -183,6 +191,23 @@ database or create fictitious commercial revenue. Use
 `E2E_BASE_URL` to select the isolated environment. The backend guide explains
 `TEST_DATABASE_URL` and its disposable PostgreSQL schemas. Isolated frontend
 browser fixtures cover public screens without publishing test businesses.
+
+The opt-in manager demonstration uses separate browsers for two customers and
+the owner. One customer leaves a private cart; the second checks out food and a
+drink. It leaves exactly one **unpaid, pending sample order**, never records cash
+or fabricates completed sales, and captures cart/receipt/owner screenshots in
+the ignored Playwright results directory. It refuses real restaurants:
+
+```powershell
+$env:E2E_MANAGER_DEMO = '1'
+$env:E2E_PUBLIC_RESTAURANT_SLUG = 'saffron-table'
+$env:E2E_PUBLIC_OWNER_EMAIL = '<sample owner email from the private credentials file>'
+npm.cmd run test:e2e -- manager-demo.spec.ts --project=desktop
+```
+
+Running this demonstration again intentionally creates another sample order.
+The default test run skips it. The frontend readability checks cover 320, 390,
+768 and 1440 pixel widths, 16px form inputs and at least 44px action targets.
 
 ## Hosting
 

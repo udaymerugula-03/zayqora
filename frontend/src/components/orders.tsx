@@ -16,7 +16,7 @@ export function Orders({board=false}:{board?:boolean}){
  function filter(name:keyof typeof filters,value:string){setFilters(current=>({...current,[name]:value}));setPage(1);}
  const quickFilters=board?[["","All active"],["PENDING","Incoming"],["CONFIRMED","Accepted"],["PREPARING","Preparing"],["READY","Ready to go"],["OUT_FOR_DELIVERY","Dispatched"]]:[["","All orders"],["PENDING","Needs a response"],["PREPARING","In the kitchen"],["READY","Ready to go"],["COMPLETED","Completed"]];
  return <>
-   <PageTitle eyebrow={board?"Owner-operated kitchen view":"Owner-operated order board"} title={board?"Kitchen order board":"Every order. A little more organised."}><p>{board?"Active orders with item instructions and preparation status. Open a ticket to make an authorized status change. Refreshes every 10 seconds.":"Manage your restaurant's orders, update fulfilment status and explicitly record cash receipt."}</p></PageTitle>
+   <PageTitle eyebrow={board?"Owner-operated kitchen view":"Owner-operated order board"} title={board?"Kitchen order board":"Every order. A little more organised."}><p>{board?"Active orders with item instructions and preparation status. Open a ticket to make an authorized status change. Refreshes every 10 seconds.":"Customer orders appear here after checkout, not while items are in a cart. Review items, update fulfilment status and record cash receipt. Refreshes every 20 seconds."}</p></PageTitle>
    <div className="order-status-filters" role="group" aria-label="Quick order filters">{quickFilters.map(([value,label])=><button key={value} className={status===value?"selected":""} aria-pressed={status===value} onClick={()=>{setStatus(value);setPage(1);}}>{label}</button>)}</div>
    <form className="filter-bar" onSubmit={e=>{e.preventDefault();setQuery(search);setPage(1);}}>
      <Field label="Search reference or customer"><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search orders…"/></Field>
@@ -25,7 +25,7 @@ export function Orders({board=false}:{board?:boolean}){
      <Field label="Payment status"><select value={filters.payment_status} onChange={e=>filter("payment_status",e.target.value)}><option value="">All payments</option><option value="paid">Paid</option><option value="unpaid">Unpaid</option></select></Field>
      <Field label="From · Karachi date"><input type="date" value={filters.from_date} max={filters.to_date||undefined} onChange={e=>filter("from_date",e.target.value)}/></Field>
      <Field label="To · Karachi date"><input type="date" value={filters.to_date} min={filters.from_date||undefined} onChange={e=>filter("to_date",e.target.value)}/></Field>
-     <button>Search</button>{board&&<button type="button" className="secondary" disabled={q.isFetching} onClick={()=>q.refetch()}>Refresh board</button>}
+     <button>Search</button><button type="button" className="secondary" disabled={q.isFetching} onClick={()=>q.refetch()}>{board?"Refresh board":"Refresh orders"}</button>
    </form>
    {q.isPending?<Loading/>:q.isError?<Notice error>{q.error.message}<button onClick={()=>q.refetch()}>Retry orders</button></Notice>:<section className="panel">
      <div className="orders-table-heading"><div><span className="eyebrow">The service ledger</span><h2>{status?status.replaceAll("_"," ").toLowerCase()+" orders":"All restaurant orders"}</h2></div><span>{q.data.total} matching record(s)</span></div>

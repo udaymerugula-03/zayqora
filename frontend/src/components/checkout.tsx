@@ -150,7 +150,7 @@ export function CartCheckout({checkout=false}:{checkout?:boolean}){
           {error&&<Notice error>{error} If the connection was interrupted, use the same details and retry; your order key is preserved.</Notice>}
           {checkout?<button type="submit" form="checkout-form" className="full" disabled={placing||isSubmitting||confirmed!==quoteFingerprint(quote.data)}>{placing?"Submitting safely…":"Place cash order →"}</button>:<Link className="button full" href={`/r/${r.slug}/checkout`}>Continue to checkout →</Link>}
         </>}
-        <p className="fine">Server-calculated prices. Availability is checked again when your order is submitted.</p>
+        <p className="fine">Your cart stays on this device. The owner receives an order only after you select Place cash order and checkout succeeds. Prices and availability are checked by the server.</p>
       </aside>
     </div>
   </main>;

@@ -1,0 +1,223 @@
+:root {
+  --text-body: 1rem;
+  --text-control: 1rem;
+  --text-ui: .9375rem;
+  --text-small: .875rem;
+  --text-caption: .8125rem;
+}
+
+body {font-size: var(--text-body); line-height: 1.65;}
+
+.editorial-copy > p, .card-body p, .steps p, .owner-banner p,
+.page-title p, .menu-masthead .page-title p, .auth-card > p, .auth-editorial p, .plan p, .prose p,
+.restaurant-introduction > p:not(.restaurant-tagline), .restaurant-about-copy,
+.menu-card .card-body p, .dialog-food + p, .form-section-heading p,
+.workspace-main .page-title p, .workspace-welcome p, .platform-welcome p,
+.platform-control p, .scope-panel > p, .outbox-guide p, .story-grid > div > p,
+.contact-details address, .tracking-overview p {
+  font-size: var(--text-body);
+  line-height: 1.7;
+}
+
+.fine, small, .notice, .empty, .loading small, .field-error,
+.choice.consent, .auth-card .fine, .hero-note p, .section-heading > p,
+.card-meta, .collection-count, .restaurant-name small,
+.restaurant-service-note, .restaurant-info-strip small,
+.restaurant-info-strip > a, .menu-masthead-note, .menu-page > .fine,
+.menu-category-heading > span, .menu-dietary-note, .cart-line small,
+.cart-line p, .summary-item small, .totals small, .order-summary > .fine,
+.reservation-callout .fine, .tracking-layout > .panel > .fine,
+.tracking-history > .fine, .settings-navigation > p,
+.operations-footnote, .kitchen-ticket .notice, .orders-table-heading > span,
+.admin-menu-item p, .definitions dd, .stat-card > small,
+.workspace-shortcuts small, .top-item small, .timeline time, .timeline p,
+.contact-hours > .muted, .contact-hours .notice, .check-list li,
+.owner-banner-aside small, .footer-grid nav, .footer-bottom,
+.workspace-foot, .pagination {
+  font-size: var(--text-small);
+  line-height: 1.65;
+}
+
+.eyebrow, .workspace-main .eyebrow, .workspace-main .page-title .eyebrow,
+.page-title .eyebrow, .collage-caption .eyebrow,
+.editorial-copy > .eyebrow, .menu-masthead .page-title .eyebrow,
+.restaurant-introduction .eyebrow, .auth-editorial .eyebrow,
+.owner-banner .eyebrow, .footer-grid .eyebrow, .story-heading .eyebrow,
+.story-grid .eyebrow, .contact-details .eyebrow, .contact-hours .eyebrow,
+.plan-topline .eyebrow, .image-label, .card-image .image-label,
+.menu-image .image-label, .form-section-heading > span,
+.tracking-receipt > span:first-child, .story-detail > span,
+.contact-links span, .workspace-label, .workspace-edition,
+.stat-index, .stat-card .stat-index, .orders-table-heading > span,
+.settings-navigation > a > span, .collage-caption > span:last-child,
+.editorial-ribbon .container, .editorial-ribbon span:first-child,
+.owner-banner-aside > span, .owner-banner-aside b, .steps article > span,
+.auth-step small, .auth-assurance, .auth-editorial-footer,
+.reservation-photo-band > small {
+  font-size: var(--text-caption);
+  letter-spacing: .06em;
+}
+
+.field > span, .filter-bar .field > span, .settings-form .field > span,
+.option-row .field > span, legend, .choice, .choice strong,
+.hours-editor, .hours-editor .choice, .quantity, .summary-item,
+.summary-item > span, .totals > div, .menu-card strong,
+.restaurant-info-strip strong, .hours-row, .timeline li,
+.workspace-shortcuts strong, .top-item, .top-item > strong,
+.definitions dt, .stat-top > span:first-child, .stat-card > span {
+  font-size: var(--text-ui);
+}
+.owner-banner-aside > div {font-size: var(--text-ui);}
+.menu-card strong small {font-size: var(--text-small);}
+.website-preview .notice {font-size: var(--text-small);}
+
+input:not([type=checkbox]):not([type=radio]), select, textarea,
+.field input:not([type=checkbox]):not([type=radio]),
+.field select, .field textarea, .city-filter select,
+.hours-editor input:not([type=checkbox]), .quantity input:not([type=checkbox]),
+.upload-field input[type=file] {
+  font-size: var(--text-control);
+  min-height: 48px;
+}
+
+/* The legacy mobile search rule also uses !important. Keep inputs at 16px to avoid mobile zoom. */
+.menu-toolbar input, .search-field input:not([type=checkbox]):not([type=radio]) {
+  font-size: var(--text-control) !important;
+}
+.mobile-menu {font-size: var(--text-ui) !important;}
+
+button, .button, button.small, .button.small, .text-button, .icon-button,
+.mobile-menu, .workspace-mobile-header > button, .sidebar-bottom button,
+.order-status-filters button, .filter-bar > button, .pagination button,
+.menu-category-rail .category-tabs button, .menu-toolbar .button,
+.menu-card .card-body .small, .cart-line .text-button,
+.admin-menu-item .text-button, .option-row .icon-button,
+.restaurant-bar .button.small, .editorial-copy .button,
+.restaurant-introduction .button, .workspace-welcome .button, td .small {
+  font-size: var(--text-ui);
+  min-height: 48px;
+}
+
+.icon-button, .option-row .icon-button {min-width: 44px; width: 44px;}
+.text-button, .text-link {min-height: 44px; display: inline-flex; align-items: center;}
+.text-link, .editorial-copy .text-link, .restaurant-introduction .text-link,
+.workspace-welcome .text-link, .workspace-main .panel .text-link {
+  font-size: var(--text-ui);
+  max-width: 100%;
+}
+
+.header-inner nav, .restaurant-bar nav, .workspace-sidebar nav a,
+.settings-navigation > a, .workspace-breadcrumb strong, .workspace-top a {
+  font-size: var(--text-ui);
+}
+.workspace-sidebar nav a {min-width: 0; min-height: 48px; overflow-wrap: anywhere;}
+.workspace-sidebar nav a > small {font-size: var(--text-caption);}
+.workspace-breadcrumb > span, .cash-indicator {font-size: var(--text-caption);}
+.workspace-top, .workspace-breadcrumb {flex-wrap: wrap;}
+.brand small, .workspace-sidebar .brand small, .workspace-mobile-header .brand small,
+.footer-grid .brand small {font-size: 9px; letter-spacing: .02em; white-space: normal;}
+.sidebar-bottom strong {font-size: var(--text-small);}
+.sidebar-bottom small {font-size: var(--text-caption);}
+.sidebar-note p {font-size: var(--text-small);}
+
+table, .workspace-main table td, td > strong {font-size: var(--text-small);}
+th, .workspace-main table th, td > small {font-size: var(--text-caption);}
+.badge, .admin-menu-item .badge {font-size: var(--text-caption);}
+.page-title h1 {font-size: clamp(2.1rem, 4vw, 3.25rem);}
+.workspace-main .page-title h1 {font-size: clamp(2rem, 3.2vw, 2.75rem);}
+.menu-card h3 {font-size: 1.75rem; line-height: 1.25;}
+.menu-card .card-body > .row:last-child {flex-wrap: wrap;}
+.menu-catalogue, .menu-category-rail, .menu-results, .menu-section {min-width: 0;}
+.menu-category-heading {flex-wrap: wrap; gap: 8px;}
+.menu-category-heading h2 {min-width: 0; overflow-wrap: anywhere;}
+.cart-line > div, .summary-item > div {min-width: 0; overflow-wrap: anywhere;}
+.summary-item > span {flex-shrink: 0;}
+.checkout-progress {font-size: var(--text-small); flex-wrap: wrap;}
+.checkout-progress a, .checkout-progress > span {min-height: 44px;}
+.checkout-progress a > span, .checkout-progress span > span {font-size: var(--text-caption);}
+.settings-navigation > a {white-space: normal;}
+.hours-editor {grid-template-columns: 45px 100px minmax(0,1fr) 20px minmax(0,1fr);}
+.option-row {grid-template-columns: minmax(0,1fr) 145px 44px;}
+.order-status-filters {padding-block: 4px 18px;}
+
+@media (max-width: 1100px) {
+  .checkout-grid {grid-template-columns: 1fr;}
+  .order-summary {position: static;}
+  .workspace-main .page-title {display: block;}
+  .workspace-main .page-description {max-width: 100%;}
+  .settings-layout {grid-template-columns: 1fr;}
+  .settings-navigation {position: static; display: flex; flex-wrap: wrap; gap: 8px;}
+  .settings-navigation > .eyebrow, .settings-navigation > p {display: none;}
+  .settings-navigation > a {padding: 10px 12px; min-height: 44px;}
+}
+
+@media (max-width: 960px) {
+  .header-inner {position: relative; height: auto; min-height: 84px; gap: 12px; flex-wrap: wrap;}
+  .mobile-menu {display: inline-flex;}
+  .header-inner > .brand {max-width: calc(100% - 95px);}
+  .header-inner nav {display: none; position: absolute; inset: 100% 0 auto; padding: 18px; background: var(--cream); border: 1px solid var(--line); box-shadow: var(--shadow); flex-direction: column; align-items: stretch; gap: 4px;}
+  .header-inner nav.is-open {display: flex;}
+  .header-inner nav > a {min-height: 48px; padding: 12px;}
+  .header-inner nav .button {margin-left: 0;}
+  .workspace {display: block;}
+  .workspace-mobile-header {display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; min-height: 84px; background: var(--cream); border-bottom: 1px solid var(--line);}
+  .workspace-mobile-header .brand {max-width: calc(100% - 125px);}
+  .workspace-sidebar {display: none; position: relative; inset: auto; width: 100%; padding: 24px 20px;}
+  .workspace-menu-open .workspace-sidebar {display: flex;}
+  .workspace-brand, .sidebar-note {display: none;}
+  .workspace-label {margin-top: 0;}
+  .workspace-sidebar nav {display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px;}
+  .workspace-sidebar nav a {font-size: var(--text-ui);}
+  .workspace-body {margin-left: 0; width: 100%;}
+  .workspace-main {padding: 28px 20px;}
+  .workspace-top {padding: 16px 20px;}
+  .brand > span:last-child {min-width: 0;}
+  .restaurant-bar nav a {min-height: 48px;}
+  .menu-masthead {grid-template-columns: 1fr;}
+  .menu-masthead > img {display: none;}
+  .menu-masthead .page-title h1 {font-size: clamp(2.1rem,6vw,3rem);}
+  .menu-masthead .page-title p {font-size: var(--text-body);}
+  .menu-masthead-note {flex-wrap: wrap;}
+  .menu-catalogue {grid-template-columns: minmax(0,1fr);}
+  .menu-category-rail {position: static;}
+  .menu-category-rail .category-tabs {display: flex; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; min-width: 0; max-width: 100%; gap: 8px;}
+  .menu-category-rail .category-tabs button {flex-shrink: 0; white-space: nowrap;}
+  .editorial-hero {grid-template-columns: 1fr; gap: 32px;}
+  .editorial-collage {width: min(100%,560px); margin-inline: auto; height: 480px;}
+  .settings-navigation {flex-wrap: nowrap; overflow-x: auto; max-width: 100%; padding-bottom: 10px;}
+  .settings-navigation > a {white-space: nowrap; flex-shrink: 0;}
+}
+
+@media (max-width: 600px) {
+  .form-grid, .settings-form .form-grid, .checkout-grid .form-grid,
+  .workspace-main .stats-grid, .table-card-grid {grid-template-columns: 1fr;}
+  .workspace-sidebar nav {grid-template-columns: 1fr;}
+  .workspace-top {gap: 8px;}
+  .workspace-breadcrumb > span, .workspace-breadcrumb > i {display: none;}
+  .workspace-main .page-title p {padding-top: 12px;}
+  .page-title .page-description {margin-top: 12px;}
+  .menu-toolbar {flex-wrap: wrap;}
+  .menu-toolbar .search-field {width: 100%;}
+  .menu-toolbar .button {width: 100%;}
+  .category-tabs {scroll-padding-inline: 8px;}
+  .cart-line {gap: 14px;}
+  .cart-line > img {width: 60px; height: 75px;}
+  .cart-line h3 {font-size: 1.5rem;}
+  .quantity {display: flex; flex-wrap: wrap; margin-right: 0;}
+  .summary-item {flex-wrap: wrap; gap: 8px;}
+  .totals .grand-total {flex-wrap: wrap;}
+  .fulfilment-options {flex-wrap: wrap; gap: 8px 20px;}
+  .hours-editor {grid-template-columns: 1fr 1fr; gap: 10px;}
+  .hours-editor > strong {grid-column: 1;}
+  .hours-editor > span {display: none;}
+  .option-row {grid-template-columns: minmax(0,1fr) 44px; align-items: end;}
+  .option-row > .field:nth-child(2) {grid-column: 1; grid-row: 2;}
+  .option-row > button {grid-column: 2; grid-row: 1 / 3; align-self: center;}
+  .admin-menu-item {flex-wrap: wrap;}
+  .admin-menu-item .actions {flex-wrap: wrap;}
+  .admin-menu-item .row {flex-wrap: wrap;}
+  .dialog-head h2 {font-size: 1.75rem; overflow-wrap: anywhere;}
+  .dialog-head .icon-button {flex-shrink: 0;}
+  .footer-grid > div:first-child {flex-wrap: wrap;}
+  .footer-mission {text-align: left;}
+}
